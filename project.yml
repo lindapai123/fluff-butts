@@ -16,6 +16,8 @@ targets:
     platform: iOS
     sources:
       - FluffButs
+    dependencies:
+      - sdk: SpriteKit.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.fluffbuts.app
