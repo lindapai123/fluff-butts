@@ -30,7 +30,7 @@ struct ContentView: View {
 
                 // Title
                 VStack(spacing: 8) {
-                    Text("Fluff Buts")
+                    Text("Fluff Butts")
                         .font(.system(size: 52, weight: .heavy, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
@@ -44,7 +44,7 @@ struct ContentView: View {
                         )
                         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
 
-                    Text("Train your dog. Earn a fluffy butt. 🐶")
+                    Text("Train your dog. Earn a fluffy butt! 🐶")
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundColor(Color(red: 0.55, green: 0.38, blue: 0.15))
                         .multilineTextAlignment(.center)

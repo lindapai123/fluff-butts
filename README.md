@@ -1,4 +1,4 @@
-# 🐾 Fluff Buts
+# 🐾 Fluff Butts
 
 > *Train your dog. Earn a fluffy butt.*
 
@@ -9,7 +9,7 @@ A fun dog training iOS game built by **Emma** — inspired by their real dogs Me
 ## 📱 App Preview
 
 <p align="center">
-  <img src="Assets/screenshot.png" width="300" alt="Fluff Buts Loading Screen" />
+  <img src="Assets/screenshot.png" width="300" alt="Fluff Butts Loading Screen" />
 </p>
 
 ---
