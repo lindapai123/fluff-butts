@@ -11,7 +11,7 @@ struct PhysicsCategory {
 }
 
 // MARK: - GameScene
-final class GameScene: SKScene, SKPhysicsContactDelegate {
+final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
 
     // MARK: Nodes
     private var dogNode: DogNode!
