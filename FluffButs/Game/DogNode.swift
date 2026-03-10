@@ -269,6 +269,43 @@ final class DogNode: SKNode {
         ]))
     }
 
+    /// Called when the dog hits the side of a rock — bounces back and turns around
+    func bounceBack() {
+        guard let body = physicsBody else { return }
+
+        // Reverse horizontal velocity and pop upward slightly
+        let dir: CGFloat = bodyNode.xScale > 0 ? -1 : 1
+        body.velocity = CGVector(dx: dir * 320, dy: 80)
+
+        // Flip sprite to face the other way
+        bodyNode.xScale = -bodyNode.xScale
+
+        showSpeechBubble("Oof!")
+
+        // Shake animation
+        let shake = SKAction.sequence([
+            SKAction.moveBy(x: dir * -10, y: 0, duration: 0.06),
+            SKAction.moveBy(x: dir *  10, y: 0, duration: 0.06),
+            SKAction.moveBy(x: dir *  -6, y: 0, duration: 0.05),
+        ])
+        run(shake)
+
+        // Pause movement briefly so the bounce plays out, then re-seek
+        let prevTarget = targetPosition
+        stopMoving()
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: 0.5),
+            SKAction.run { [weak self] in
+                guard let self else { return }
+                // Flip back to face forward if we have a target ahead
+                if let t = prevTarget, t.x > position.x {
+                    bodyNode.xScale = abs(bodyNode.xScale)
+                }
+                if let t = prevTarget { moveTo(position: t) }
+            }
+        ]))
+    }
+
     /// Called when Lincoln hits a water puddle
     func getWet() {
         guard !isWet else { return }

@@ -735,11 +735,20 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
 
     private func handleRockHit() {
         hitObstacleCount += 1
+        dogNode.bounceBack()
+
+        // Camera shake
         let shake = SKAction.sequence([
             SKAction.moveBy(x: -8, y: 0, duration: 0.05), SKAction.moveBy(x: 8, y: 0, duration: 0.05),
             SKAction.moveBy(x: -6, y: 0, duration: 0.05), SKAction.moveBy(x: 6, y: 0, duration: 0.05)
         ])
         gameCamera.run(shake)
+
+        // Re-seek nearest treat after bounce settles
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: 0.6),
+            SKAction.run { [weak self] in self?.seekNearestTreat() }
+        ]))
     }
 
     // MARK: - Course Complete
