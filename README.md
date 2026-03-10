@@ -32,16 +32,16 @@ Memphis and Lincoln are Emma's real dogs! 🦮🐕
 ## Screenshots
 
 ### Home Screen
-![Home](Assets/simulator-screenshot.png)
+![Home](Assets/screen-home.png)
 
 ### Dog Selection
-![Dog Selection](Assets/screen-home.png)
+![Dog Selection](Assets/screen-dog-selection.png)
 
 ### Memphis in action
-![Memphis](Assets/simulator-game-screenshot.png)
+![Memphis](Assets/memphis-game.png)
 
 ### Grooming Mini-Game
-![Grooming](Assets/grooming-real-image.png)
+![Grooming](Assets/grooming-no-qmarks.png)
 
 ---
 
