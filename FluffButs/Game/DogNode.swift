@@ -11,6 +11,7 @@ final class DogNode: SKNode {
     private(set) var isMoving: Bool = false
     private(set) var isStubborn: Bool = false
     private(set) var isWet: Bool = false
+    private(set) var isInAir: Bool = false
     var targetPosition: CGPoint?
     let breed: DogBreed
 
@@ -150,9 +151,14 @@ final class DogNode: SKNode {
         body.linearDamping = 0.4
         body.mass = 1.0
         body.categoryBitMask    = PhysicsCategory.dog
-        body.contactTestBitMask = PhysicsCategory.finishLine | PhysicsCategory.water
-        body.collisionBitMask   = PhysicsCategory.ground
+        body.contactTestBitMask = PhysicsCategory.finishLine | PhysicsCategory.water | PhysicsCategory.ground
+        body.collisionBitMask   = PhysicsCategory.ground | PhysicsCategory.obstacle
         physicsBody = body
+    }
+
+    /// Called by GameScene when the dog lands on the ground (resets jump state).
+    func didLand() {
+        isInAir = false
     }
 
     // MARK: - Direction
@@ -215,6 +221,21 @@ final class DogNode: SKNode {
         }
     }
 
+    /// Player-triggered jump (swipe up). Works for both breeds.
+    func jump() {
+        guard !isInAir, let body = physicsBody else { return }
+        isInAir = true
+        body.velocity.dy = 500
+        // Ears-back jump animation
+        let squeeze = SKAction.sequence([
+            SKAction.scaleY(to: 0.85, duration: 0.06),
+            SKAction.scaleY(to: 1.15, duration: 0.10),
+            SKAction.scaleY(to: 1.0, duration: 0.12)
+        ])
+        bodyNode.run(squeeze)
+        showSpeechBubble(breed == .memphis ? "Woof!" : "Hmph!")
+    }
+
     /// Memphis: leap upward with a happy bounce
     func deerHop() {
         guard let body = physicsBody else { return }
@@ -225,7 +246,7 @@ final class DogNode: SKNode {
             SKAction.rotate(byAngle: -0.4, duration: 0.1)
         ])
         bodyNode.run(SKAction.repeat(wag, count: 4))
-        showSpeechBubble("Wheee! 🦌")
+        showSpeechBubble("Wheee!")
     }
 
     /// Lincoln: plant his feet and refuse to move for a moment
@@ -233,7 +254,7 @@ final class DogNode: SKNode {
         guard !isStubborn else { return }
         isStubborn = true
         stopMoving()
-        showSpeechBubble("Nope. 😤")
+        showSpeechBubble("Nope.")
         // Resume after 2-3 seconds
         let wait = TimeInterval.random(in: 2.0...3.5)
         run(SKAction.sequence([
@@ -253,7 +274,7 @@ final class DogNode: SKNode {
         guard !isWet else { return }
         isWet = true
         onGotWet?()
-        showSpeechBubble("Nooooo! 💦")
+        showSpeechBubble("Nooooo!!")
         // Shake the dog
         let shake = SKAction.sequence([
             SKAction.moveBy(x: -6, y: 0, duration: 0.05),

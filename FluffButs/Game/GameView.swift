@@ -2,40 +2,34 @@ import SwiftUI
 import SpriteKit
 
 // MARK: - GameView
-// SwiftUI wrapper around the SpriteKit GameScene.
-// Presents GroomingView as a full-screen cover when the course is complete.
 struct GameView: View {
 
     let breed: DogBreed
     @Environment(\.dismiss) private var dismiss
 
     @State private var scene: GameScene
-    @State private var gameResult: GameResult? = nil
-    @State private var showGrooming = false
+    @State private var gameResult: GameResult? = nil   // drives fullScreenCover(item:)
 
     init(breed: DogBreed) {
         self.breed = breed
-        let s = GameView.makeScene(breed: breed)
-        _scene = State(initialValue: s)
+        _scene = State(initialValue: GameView.makeScene(breed: breed))
     }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            // Full-screen SpriteKit canvas
             SpriteView(scene: scene)
                 .ignoresSafeArea()
                 .onAppear {
-                    // Wire the game result callback
-                    scene.onCourseComplete = { result in
-                        gameResult = result
-                        showGrooming = true
+                    // Wire callback every time the view appears (also after Play Again)
+                    scene.onCourseComplete = { [self] result in
+                        DispatchQueue.main.async {
+                            gameResult = result
+                        }
                     }
                 }
 
             // Back button
-            Button {
-                dismiss()
-            } label: {
+            Button { dismiss() } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 16, weight: .semibold))
@@ -50,7 +44,7 @@ struct GameView: View {
                 .padding(.leading, 16)
             }
 
-            // Title bar
+            // Title
             HStack(spacing: 6) {
                 Image(systemName: "pawprint.fill")
                     .font(.system(size: 16, weight: .bold))
@@ -62,24 +56,19 @@ struct GameView: View {
             .frame(maxWidth: .infinity)
             .padding(.top, 62)
         }
-        .fullScreenCover(isPresented: $showGrooming) {
-            if let result = gameResult {
-                GroomingView(result: result) {
-                    // Play again — dismiss grooming and reset game
-                    showGrooming = false
-                    gameResult = nil
-                    let newScene = GameView.makeScene(breed: breed)
-                    newScene.onCourseComplete = { result in
-                        gameResult = result
-                        showGrooming = true
-                    }
-                    scene = newScene
+        // fullScreenCover(item:) — only presents when gameResult is non-nil, never shows blank screen
+        .fullScreenCover(item: $gameResult) { result in
+            GroomingView(result: result) {
+                // Play Again — dismiss grooming by clearing gameResult, then reset scene
+                gameResult = nil
+                let newScene = GameView.makeScene(breed: breed)
+                newScene.onCourseComplete = { r in
+                    DispatchQueue.main.async { gameResult = r }
                 }
+                scene = newScene
             }
         }
     }
-
-    // MARK: - Scene Factory
 
     private static func makeScene(breed: DogBreed) -> GameScene {
         let s = GameScene(size: CGSize(width: 393, height: 852), breed: breed)
@@ -89,6 +78,4 @@ struct GameView: View {
     }
 }
 
-#Preview {
-    GameView(breed: .memphis)
-}
+#Preview { GameView(breed: .memphis) }

@@ -2,7 +2,8 @@ import Foundation
 
 // MARK: - GameResult
 // Passed from GameScene → GameView → GroomingView after course complete.
-struct GameResult {
+struct GameResult: Identifiable {
+    let id = UUID()
     let breed: DogBreed
     let bonesCollected: Int
     let totalBones: Int

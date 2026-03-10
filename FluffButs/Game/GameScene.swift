@@ -208,11 +208,19 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         ])
         puddle.run(SKAction.repeatForever(ripple))
 
-        // Splash label
-        let splash = SKLabelNode(text: "💧")
-        splash.fontSize = 14
-        splash.position = CGPoint(x: 0, y: 10)
-        puddle.addChild(splash)
+        // Small wave marks on puddle (no emoji)
+        for wx in [-28, -8, 12, 32] as [Int] {
+            let wave = SKShapeNode()
+            let p = CGMutablePath()
+            p.move(to: CGPoint(x: -4, y: 0))
+            p.addQuadCurve(to: CGPoint(x: 4, y: 0), control: CGPoint(x: 0, y: 4))
+            wave.path = p
+            wave.strokeColor = SKColor(white: 1.0, alpha: 0.55)
+            wave.lineWidth = 1.5
+            wave.lineCap = .round
+            wave.position = CGPoint(x: CGFloat(wx), y: 3)
+            puddle.addChild(wave)
+        }
 
         // Contact sensor (no collision — dog walks through)
         let body = SKPhysicsBody(rectangleOf: CGSize(width: width, height: 12))
@@ -246,7 +254,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         bannerBG.position = CGPoint(x: x, y: groundY + 218)
         addChild(bannerBG)
 
-        let banner = SKLabelNode(text: "FINISH! 🏁")
+        let banner = SKLabelNode(text: "FINISH!")
         banner.fontSize = 18
         banner.fontName = UIFont.boldSystemFont(ofSize: 1).fontName
         banner.fontColor = .white
@@ -320,7 +328,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         bg.position = CGPoint(x: 0, y: (size.height / 2) - 80)
         bg.name = "hintBG"
 
-        let hint = SKLabelNode(text: "Tap anywhere to drop a bone!")
+        let hint = SKLabelNode(text: "Tap to drop bones  |  Swipe up to jump!")
         hint.fontSize = 15
         hint.fontName = UIFont.systemFont(ofSize: 1, weight: .medium).fontName
         hint.fontColor = .white
@@ -340,40 +348,93 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         gameCamera.childNode(withName: "boneCounter")?.removeFromParent()
 
         let total = GameScene.totalCourseBonesCount
-        var boneStr = ""
-        for i in 0..<total {
-            boneStr += i < bonesCollected ? "🟤" : "⬜"
-        }
+        // Draw bone pips as small SKShapeNode circles — no emoji
+        let container = SKNode()
+        container.name = "boneCounter"
 
-        let label = SKLabelNode(text: "🦴 \(bonesCollected)/\(total)  \(boneStr)")
+        let bg = SKShapeNode(rectOf: CGSize(width: 140, height: 30), cornerRadius: 10)
+        bg.fillColor = SKColor(white: 0, alpha: 0.45)
+        bg.strokeColor = .clear
+        bg.position = CGPoint(x: size.width / 2 - 90, y: size.height / 2 - 70)
+        container.addChild(bg)
+
+        let label = SKLabelNode(text: "Bones: \(bonesCollected)/\(total)")
         label.fontSize = 14
         label.fontName = UIFont.boldSystemFont(ofSize: 1).fontName
         label.fontColor = .white
-        label.horizontalAlignmentMode = .right
-        label.verticalAlignmentMode = .top
-        label.name = "boneCounter"
-
-        let bg = SKShapeNode(rectOf: CGSize(width: 180, height: 30), cornerRadius: 10)
-        bg.fillColor = SKColor(white: 0, alpha: 0.40)
-        bg.strokeColor = .clear
-        bg.name = "boneCounter"
-        bg.position = CGPoint(x: size.width / 2 - 20, y: size.height / 2 - 70)
-
-        label.position = CGPoint(x: 80, y: 10)
+        label.verticalAlignmentMode = .center
+        label.horizontalAlignmentMode = .center
+        label.position = .zero
         bg.addChild(label)
-        gameCamera.addChild(bg)
+
+        // Pip row — filled circles for collected, hollow for remaining
+        let pipContainer = SKNode()
+        pipContainer.position = CGPoint(x: size.width / 2 - 90, y: size.height / 2 - 96)
+        for i in 0..<total {
+            let pip = SKShapeNode(circleOfRadius: 6)
+            pip.fillColor = i < bonesCollected
+                ? SKColor(red: 0.85, green: 0.60, blue: 0.15, alpha: 1.0)
+                : SKColor(white: 1.0, alpha: 0.30)
+            pip.strokeColor = SKColor(white: 1.0, alpha: 0.60)
+            pip.lineWidth = 1.5
+            pip.position = CGPoint(x: CGFloat(i - 2) * 18, y: 0)
+            pipContainer.addChild(pip)
+        }
+        container.addChild(pipContainer)
+        gameCamera.addChild(container)
     }
 
-    // MARK: - Touch
+    // MARK: - Star shape helper
+
+    private func makeStarShape(filled: Bool, radius: CGFloat) -> SKShapeNode {
+        let path = CGMutablePath()
+        let points = 5
+        let innerR = radius * 0.42
+        for i in 0..<(points * 2) {
+            let angle = CGFloat(i) * .pi / CGFloat(points) - .pi / 2
+            let r = i % 2 == 0 ? radius : innerR
+            let pt = CGPoint(x: cos(angle) * r, y: sin(angle) * r)
+            if i == 0 { path.move(to: pt) } else { path.addLine(to: pt) }
+        }
+        path.closeSubpath()
+        let node = SKShapeNode(path: path)
+        node.fillColor  = filled ? SKColor(red: 0.98, green: 0.82, blue: 0.12, alpha: 1.0)
+                                 : SKColor(white: 0.5, alpha: 0.4)
+        node.strokeColor = filled ? SKColor(red: 0.80, green: 0.60, blue: 0.05, alpha: 1.0)
+                                  : SKColor(white: 0.8, alpha: 0.5)
+        node.lineWidth = 1.5
+        return node
+    }
+
+    // MARK: - Touch (tap = drop bone, swipe up = jump)
+
+    private var touchStartY: CGFloat = 0
+    private var touchStartTime: TimeInterval = 0
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard !isCourseComplete, let touch = touches.first else { return }
-        let loc = touch.location(in: self)
-        let treat = TreatNode()
-        treat.position = CGPoint(x: loc.x, y: groundY + 22)
-        addChild(treat)
-        treats.append(treat)
-        seekNearestTreat()
+        touchStartY    = touch.location(in: self).y
+        touchStartTime = touch.timestamp
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard !isCourseComplete, let touch = touches.first else { return }
+        let endY     = touch.location(in: self).y
+        let deltaY   = endY - touchStartY
+        let deltaT   = touch.timestamp - touchStartTime
+
+        if deltaY > 55 && deltaT < 0.35 {
+            // Swipe UP — jump!
+            dogNode.jump()
+        } else if abs(deltaY) < 20 {
+            // Tap — drop a bone
+            let loc = touch.location(in: self)
+            let treat = TreatNode()
+            treat.position = CGPoint(x: loc.x, y: groundY + 22)
+            addChild(treat)
+            treats.append(treat)
+            seekNearestTreat()
+        }
     }
 
     // MARK: - Dog AI
@@ -419,8 +480,22 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     }
 
     private func showCollectStar() {
-        let star = SKLabelNode(text: "⭐")
-        star.fontSize = 24
+        // Draw a gold star shape — no emoji
+        let star = SKShapeNode()
+        let path = CGMutablePath()
+        let points = 5
+        let outerR: CGFloat = 14, innerR: CGFloat = 6
+        for i in 0..<(points * 2) {
+            let angle = CGFloat(i) * .pi / CGFloat(points) - .pi / 2
+            let r: CGFloat = i % 2 == 0 ? outerR : innerR
+            let pt = CGPoint(x: cos(angle) * r, y: sin(angle) * r)
+            if i == 0 { path.move(to: pt) } else { path.addLine(to: pt) }
+        }
+        path.closeSubpath()
+        star.path = path
+        star.fillColor = SKColor(red: 0.98, green: 0.82, blue: 0.12, alpha: 1.0)
+        star.strokeColor = SKColor(red: 0.80, green: 0.60, blue: 0.05, alpha: 1.0)
+        star.lineWidth = 1.5
         star.position = CGPoint(x: dogNode.position.x, y: dogNode.position.y + 50)
         addChild(star)
         star.run(SKAction.sequence([
@@ -445,9 +520,13 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         let isDogRock   = (a == PhysicsCategory.dog   && b == PhysicsCategory.obstacle) ||
                           (a == PhysicsCategory.obstacle && b == PhysicsCategory.dog)
 
-        if isDogFinish { handleCourseComplete() }
-        if isDogWater  { handleWater() }
-        if isDogRock   { handleRockHit() }
+        let isDogGround = (a == PhysicsCategory.dog    && b == PhysicsCategory.ground) ||
+                          (a == PhysicsCategory.ground  && b == PhysicsCategory.dog)
+
+        if isDogFinish  { handleCourseComplete() }
+        if isDogWater   { handleWater() }
+        if isDogRock    { handleRockHit() }
+        if isDogGround  { dogNode.didLand() }
     }
 
     private func handleWater() {
@@ -514,15 +593,17 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         title.position = CGPoint(x: 0, y: 40)
         bg.addChild(title)
 
-        let starStr = String(repeating: "⭐", count: stars) + String(repeating: "☆", count: 3 - stars)
-        let starLabel = SKLabelNode(text: starStr)
-        starLabel.fontSize = 36
-        starLabel.verticalAlignmentMode = .center
-        starLabel.horizontalAlignmentMode = .center
-        starLabel.position = CGPoint(x: 0, y: -10)
-        bg.addChild(starLabel)
+        // Draw star shapes instead of emoji
+        let starRow = SKNode()
+        starRow.position = CGPoint(x: 0, y: -10)
+        for i in 0..<3 {
+            let s = makeStarShape(filled: i < stars, radius: 18)
+            s.position = CGPoint(x: CGFloat(i - 1) * 44, y: 0)
+            starRow.addChild(s)
+        }
+        bg.addChild(starRow)
 
-        let sub = SKLabelNode(text: "Grooming time! 🐕")
+        let sub = SKLabelNode(text: "Grooming time!")
         sub.fontSize = 16
         sub.fontColor = SKColor(white: 0.85, alpha: 1)
         sub.fontName = UIFont.systemFont(ofSize: 1, weight: .medium).fontName
