@@ -1,346 +1,416 @@
 import SwiftUI
 
 // MARK: - GroomingView
-// The post-run grooming mini-game. Tap/swipe to groom your dog!
-// Required taps scale with star rating; Lincoln + wet = MAXIMUM BLOW DRY.
+// Post-run grooming mini-game. Drag a brush over sticks and leaves to groom them out!
 struct GroomingView: View {
 
     let result: GameResult
     var onPlayAgain: () -> Void
 
-    @State private var tapCount = 0
-    @State private var isGroomingDone = false
-    @State private var fluffScale: CGFloat = 0.5
-    @State private var shakeOffset: CGFloat = 0
+    // Debris items tangled in the fur
+    @State private var debris: [DebrisItem] = GroomingView.makeDebris(for: .memphis)
+    @State private var brushPosition: CGPoint = .zero
+    @State private var isBrushing: Bool = false
+    @State private var isGroomingDone: Bool = false
+    @State private var showResult: Bool = false
     @State private var sparkles: [SparkleParticle] = []
-    @State private var groomProgress: CGFloat = 0
-    @State private var showResult = false
 
-    private var totalTaps: Int { result.groomingTaps }
-    private var progressPct: CGFloat { min(CGFloat(tapCount) / CGFloat(totalTaps), 1.0) }
+    private var removedCount: Int { debris.filter(\.isRemoved).count }
+    private var totalCount: Int { debris.count }
+    private var progress: CGFloat { totalCount > 0 ? CGFloat(removedCount) / CGFloat(totalCount) : 0 }
 
     var body: some View {
         ZStack {
-            // Background
+            // Purple grooming room background
             LinearGradient(
-                colors: [
-                    Color(red: 0.95, green: 0.90, blue: 0.98),
-                    Color(red: 0.85, green: 0.78, blue: 0.95)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
+                colors: [Color(red: 0.92, green: 0.88, blue: 0.98),
+                         Color(red: 0.78, green: 0.70, blue: 0.95)],
+                startPoint: .top, endPoint: .bottom
             )
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
 
-                // Header
+                // ── Header ────────────────────────────────────────────
                 VStack(spacing: 6) {
                     Text(result.groomingTitle)
                         .font(.system(size: 22, weight: .heavy, design: .rounded))
-                        .foregroundColor(Color(red: 0.45, green: 0.20, blue: 0.60))
+                        .foregroundColor(Color(red: 0.40, green: 0.18, blue: 0.60))
                         .multilineTextAlignment(.center)
-                        .padding(.top, 60)
+                        .padding(.top, 56)
 
-                    // Star rating
+                    // Stars
                     HStack(spacing: 4) {
                         ForEach(1...3, id: \.self) { i in
                             Image(systemName: i <= result.stars ? "star.fill" : "star")
                                 .font(.system(size: 26))
                                 .foregroundColor(i <= result.stars
-                                    ? Color(red: 0.95, green: 0.78, blue: 0.10)
+                                    ? Color(red: 0.95, green: 0.80, blue: 0.10)
                                     : Color(white: 0.75))
-                                .scaleEffect(i <= result.stars ? 1.1 : 1.0)
                         }
                     }
-                    .padding(.bottom, 4)
 
                     Text(result.groomingDescription)
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundColor(Color(red: 0.45, green: 0.30, blue: 0.55))
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(Color(red: 0.42, green: 0.28, blue: 0.55))
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
+                        .padding(.horizontal, 28)
+                        .padding(.bottom, 8)
                 }
 
-                Spacer()
-
-                // MAIN GROOMING AREA — tap here!
+                // ── Grooming canvas ───────────────────────────────────
                 ZStack {
-                    // Glow background
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color(red: 0.88, green: 0.82, blue: 0.98),
-                                    Color(red: 0.78, green: 0.68, blue: 0.95).opacity(0.3)
-                                ],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: 140
-                            )
+                    // Real golden retriever butt photo
+                    Image("GoldenRetrieverButt")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 320, height: 340)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color(red: 0.70, green: 0.50, blue: 0.20).opacity(0.4), lineWidth: 2)
                         )
-                        .frame(width: 280, height: 280)
+                        .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 6)
 
-                    // The fluffy butt! (drawn shapes)
-                    FluffyButtView(
-                        fluffScale: fluffScale,
-                        isDone: isGroomingDone,
-                        breed: result.breed,
-                        isWet: result.gotWet && result.breed == .lincoln
-                    )
-                    .frame(width: 220, height: 220)
-                    .offset(x: shakeOffset)
-
-                    // Sparkles overlay
-                    ForEach(sparkles) { sparkle in
-                        Text("✨")
-                            .font(.system(size: sparkle.size))
-                            .position(sparkle.position)
-                            .opacity(sparkle.opacity)
+                    // Debris items (sticks & leaves to brush out)
+                    ForEach($debris) { $item in
+                        DebrisView(item: item)
                     }
 
-                    if !isGroomingDone {
-                        // Tool icon hint
-                        VStack {
-                            Spacer()
-                            Text(groomingToolIcon)
-                                .font(.system(size: 32))
-                                .opacity(0.6)
-                        }
-                        .frame(height: 280)
+                    // Brush cursor — follows drag
+                    if isBrushing {
+                        BrushView()
+                            .position(brushPosition)
+                            .allowsHitTesting(false)
+                    }
+
+                    // Sparkles
+                    ForEach(sparkles) { s in
+                        Text("✨")
+                            .font(.system(size: s.size))
+                            .position(s.position)
+                            .opacity(s.opacity)
+                            .allowsHitTesting(false)
+                    }
+
+                    // Completion glow overlay
+                    if isGroomingDone {
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(Color.yellow.opacity(0.15))
+                            .overlay(
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(Color(red: 0.95, green: 0.85, blue: 0.20))
+                            )
+                            .transition(.opacity)
                     }
                 }
-                .onTapGesture { handleGroomTap() }
+                .frame(width: 320, height: 340)
+                .gesture(
+                    DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                        .onChanged { value in
+                            isBrushing = true
+                            brushPosition = value.location
+                            checkBrushHits(at: value.location)
+                        }
+                        .onEnded { _ in
+                            isBrushing = false
+                        }
+                )
+                .padding(.vertical, 12)
 
-                // Progress bar
+                // ── Progress bar ──────────────────────────────────────
                 if !isGroomingDone {
-                    VStack(spacing: 8) {
-                        Text(tapCount == 0 ? "Tap to groom!" : "Keep going! \(totalTaps - tapCount) more…")
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundColor(Color(red: 0.45, green: 0.25, blue: 0.60))
+                    VStack(spacing: 6) {
+                        Text(removedCount == 0
+                             ? "Drag the brush to groom! 🪮"
+                             : "\(totalCount - removedCount) more to go…")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundColor(Color(red: 0.40, green: 0.22, blue: 0.58))
 
                         ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color(white: 0.88))
-                                .frame(height: 18)
-
-                            RoundedRectangle(cornerRadius: 10)
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(white: 0.85))
+                                .frame(height: 16)
+                            RoundedRectangle(cornerRadius: 8)
                                 .fill(
                                     LinearGradient(
                                         colors: [Color(red: 0.75, green: 0.40, blue: 0.90),
-                                                 Color(red: 0.55, green: 0.25, blue: 0.80)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
+                                                 Color(red: 0.52, green: 0.22, blue: 0.78)],
+                                        startPoint: .leading, endPoint: .trailing
                                     )
                                 )
-                                .frame(width: max(18, 260 * progressPct), height: 18)
-                                .animation(.spring(response: 0.3), value: progressPct)
+                                .frame(width: max(16, 280 * progress), height: 16)
+                                .animation(.spring(response: 0.25), value: progress)
                         }
-                        .frame(width: 260)
+                        .frame(width: 280)
                     }
-                    .padding(.top, 16)
-                } else if showResult {
-                    // Done!
-                    VStack(spacing: 6) {
-                        Text("✨ Beautiful! ✨")
-                            .font(.system(size: 24, weight: .heavy, design: .rounded))
-                            .foregroundColor(Color(red: 0.55, green: 0.25, blue: 0.75))
+                    .padding(.bottom, 8)
+                }
+
+                // ── Done message ──────────────────────────────────────
+                if showResult {
+                    VStack(spacing: 4) {
+                        Text("✨ Gorgeous! ✨")
+                            .font(.system(size: 26, weight: .heavy, design: .rounded))
+                            .foregroundColor(Color(red: 0.50, green: 0.20, blue: 0.72))
                         Text("What a fluffy butt! 🐾")
                             .font(.system(size: 15, weight: .medium, design: .rounded))
-                            .foregroundColor(Color(red: 0.55, green: 0.38, blue: 0.65))
+                            .foregroundColor(Color(red: 0.50, green: 0.35, blue: 0.62))
                     }
-                    .padding(.top, 16)
                     .transition(.scale.combined(with: .opacity))
+                    .padding(.vertical, 8)
                 }
 
                 Spacer()
 
-                // Buttons
-                if isGroomingDone && showResult {
-                    VStack(spacing: 12) {
-                        Button(action: onPlayAgain) {
-                            HStack(spacing: 10) {
-                                Image(systemName: "arrow.counterclockwise")
-                                    .font(.system(size: 18, weight: .bold))
-                                Text("Play Again!")
-                                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 18)
-                            .background(
-                                LinearGradient(
-                                    colors: [Color(red: 0.75, green: 0.40, blue: 0.90),
-                                             Color(red: 0.55, green: 0.20, blue: 0.75)],
-                                    startPoint: .top, endPoint: .bottom
-                                )
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 18))
-                            .shadow(color: Color(red: 0.55, green: 0.20, blue: 0.75).opacity(0.4),
-                                    radius: 10, x: 0, y: 5)
+                // ── Play Again ────────────────────────────────────────
+                if showResult {
+                    Button(action: onPlayAgain) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 18, weight: .bold))
+                            Text("Play Again!")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
                         }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(red: 0.75, green: 0.38, blue: 0.90),
+                                         Color(red: 0.52, green: 0.18, blue: 0.75)],
+                                startPoint: .top, endPoint: .bottom
+                            )
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                        .shadow(color: Color(red: 0.52, green: 0.18, blue: 0.75).opacity(0.4),
+                                radius: 10, x: 0, y: 5)
                     }
                     .padding(.horizontal, 40)
-                    .padding(.bottom, 48)
+                    .padding(.bottom, 50)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
         }
-    }
-
-    // MARK: - Helpers
-
-    private var groomingToolIcon: String {
-        if result.gotWet && result.breed == .lincoln { return "💨" }
-        switch result.stars {
-        case 3: return "✨"
-        case 2: return "🪮"
-        default: return "💨"
+        .onAppear {
+            debris = GroomingView.makeDebris(for: result)
         }
     }
 
-    private func handleGroomTap() {
-        guard !isGroomingDone else { return }
-        tapCount += 1
+    // MARK: - Brush Hit Detection
 
-        // Animate scale growth
-        let newScale = 0.5 + (progressPct * 0.5)
-        withAnimation(.spring(response: 0.2)) {
-            fluffScale = newScale
-        }
-
-        // Add a sparkle
-        addSparkle()
-
-        // Shake effect for Lincoln wet
-        if result.gotWet && result.breed == .lincoln {
-            withAnimation(.easeInOut(duration: 0.05).repeatCount(4)) {
-                shakeOffset = CGFloat.random(in: -8...8)
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                shakeOffset = 0
+    private func checkBrushHits(at point: CGPoint) {
+        // Canvas is 320×340, centred in parent. Debris positions are relative to canvas top-left.
+        // DragGesture with coordinateSpace: .local gives us canvas-local coords.
+        let brushRadius: CGFloat = 38
+        var didRemove = false
+        for i in debris.indices {
+            guard !debris[i].isRemoved else { continue }
+            let dx = debris[i].position.x - point.x
+            let dy = debris[i].position.y - point.y
+            if hypot(dx, dy) < brushRadius {
+                withAnimation(.spring(response: 0.25)) {
+                    debris[i].isRemoved = true
+                }
+                didRemove = true
+                addSparkle(near: point)
             }
         }
+        if didRemove { checkCompletion() }
+    }
 
-        // Check completion
-        if tapCount >= totalTaps {
-            completeGrooming()
+    private func checkCompletion() {
+        if debris.allSatisfy(\.isRemoved) && !isGroomingDone {
+            withAnimation(.spring(response: 0.4)) { isGroomingDone = true }
+            for _ in 0..<10 { addSparkle(near: CGPoint(x: CGFloat.random(in: 60...260),
+                                                        y: CGFloat.random(in: 60...280))) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                withAnimation(.spring()) { showResult = true }
+            }
         }
     }
 
-    private func addSparkle() {
+    // MARK: - Sparkles
+
+    private func addSparkle(near point: CGPoint) {
         let s = SparkleParticle(
             id: UUID(),
-            position: CGPoint(
-                x: CGFloat.random(in: 60...220),
-                y: CGFloat.random(in: 60...220)
-            ),
-            size: CGFloat.random(in: 14...28),
+            position: CGPoint(x: point.x + CGFloat.random(in: -30...30),
+                              y: point.y + CGFloat.random(in: -30...30)),
+            size: CGFloat.random(in: 14...24),
             opacity: 1.0
         )
         sparkles.append(s)
-
-        withAnimation(.easeOut(duration: 0.8)) {
+        withAnimation(.easeOut(duration: 0.7)) {
             if let idx = sparkles.firstIndex(where: { $0.id == s.id }) {
                 sparkles[idx].opacity = 0
             }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
             sparkles.removeAll { $0.id == s.id }
         }
     }
 
-    private func completeGrooming() {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
-            isGroomingDone = true
-            fluffScale = 1.0
+    // MARK: - Debris Factory
+
+    static func makeDebris(for result: GameResult) -> [DebrisItem] {
+        makeDebris(stars: result.stars, isWet: result.gotWet && result.breed == .lincoln)
+    }
+
+    static func makeDebris(for breed: DogBreed) -> [DebrisItem] {
+        makeDebris(stars: 2, isWet: false)
+    }
+
+    private static func makeDebris(stars: Int, isWet: Bool) -> [DebrisItem] {
+        // More debris = worse run
+        let stickCount  = isWet ? 5 : max(1, 5 - stars)
+        let leafCount   = isWet ? 8 : max(2, 7 - stars)
+        let mudCount    = isWet ? 4 : 0
+
+        var items: [DebrisItem] = []
+
+        // Spread within the image canvas (320×340), avoiding edges
+        func rpt() -> CGPoint {
+            CGPoint(x: CGFloat.random(in: 40...280),
+                    y: CGFloat.random(in: 40...300))
         }
-        // Burst of sparkles
-        for _ in 0..<8 { addSparkle() }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            withAnimation(.spring()) {
-                showResult = true
+
+        for _ in 0..<stickCount {
+            items.append(DebrisItem(type: .stick, position: rpt(),
+                                    rotation: .degrees(Double.random(in: -45...45))))
+        }
+        for _ in 0..<leafCount {
+            items.append(DebrisItem(type: .leaf, position: rpt(),
+                                    rotation: .degrees(Double.random(in: 0...360))))
+        }
+        for _ in 0..<mudCount {
+            items.append(DebrisItem(type: .mud, position: rpt(), rotation: .zero))
+        }
+        return items
+    }
+}
+
+// MARK: - DebrisItem
+
+struct DebrisItem: Identifiable {
+    let id = UUID()
+    let type: DebrisType
+    let position: CGPoint
+    let rotation: Angle
+    var isRemoved: Bool = false
+}
+
+enum DebrisType {
+    case stick, leaf, mud
+}
+
+// MARK: - DebrisView
+
+private struct DebrisView: View {
+    let item: DebrisItem
+
+    var body: some View {
+        Group {
+            switch item.type {
+            case .stick:
+                StickView()
+            case .leaf:
+                LeafView()
+            case .mud:
+                Circle()
+                    .fill(Color(red: 0.35, green: 0.22, blue: 0.10).opacity(0.85))
+                    .frame(width: 28, height: 18)
+                    .overlay(Circle().fill(Color(red: 0.40, green: 0.28, blue: 0.15).opacity(0.5)).frame(width: 14, height: 10))
+            }
+        }
+        .rotationEffect(item.rotation)
+        .position(item.position)
+        .scaleEffect(item.isRemoved ? 0.01 : 1.0)
+        .opacity(item.isRemoved ? 0 : 1)
+        .animation(.spring(response: 0.2), value: item.isRemoved)
+    }
+}
+
+// MARK: - Stick drawing
+
+private struct StickView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 3)
+                .fill(Color(red: 0.45, green: 0.28, blue: 0.10))
+                .frame(width: 48, height: 7)
+            // Bark lines
+            ForEach([(-14, 0), (0, 0), (14, 0)], id: \.0) { (ox, _) in
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(Color(red: 0.32, green: 0.18, blue: 0.06))
+                    .frame(width: 1.5, height: 7)
+                    .offset(x: CGFloat(ox))
             }
         }
     }
 }
 
-// MARK: - FluffyButtView
-// A cute drawn dog butt that grows fluffier as you groom!
-private struct FluffyButtView: View {
-    let fluffScale: CGFloat
-    let isDone: Bool
-    let breed: DogBreed
-    let isWet: Bool
+// MARK: - Leaf drawing
 
-    var bodyColor: Color {
-        breed == .memphis
-            ? Color(red: 0.82, green: 0.60, blue: 0.22)
-            : Color(red: 0.15, green: 0.15, blue: 0.18)
-    }
-
+private struct LeafView: View {
     var body: some View {
         ZStack {
-            if isWet {
-                // Water drops dripping off the butt
-                ForEach(0..<5, id: \.self) { i in
-                    Circle()
-                        .fill(Color(red: 0.30, green: 0.65, blue: 0.95).opacity(0.7))
-                        .frame(width: 8, height: 8)
-                        .offset(
-                            x: CGFloat(i - 2) * 18,
-                            y: 30 + CGFloat(i % 2) * 12
-                        )
-                }
-            }
-
-            // Main butt body
+            // Leaf body
             Ellipse()
-                .fill(bodyColor)
-                .frame(width: 100, height: 80)
-                .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
-
-            // Fluffy tail poof — grows with grooming
-            Circle()
                 .fill(
-                    RadialGradient(
-                        colors: [bodyColor.opacity(0.9), bodyColor.opacity(0.4)],
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: 60 * fluffScale
+                    LinearGradient(
+                        colors: [Color(red: 0.58, green: 0.42, blue: 0.12),
+                                 Color(red: 0.72, green: 0.55, blue: 0.18)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
                     )
                 )
-                .frame(
-                    width: 60 + 60 * fluffScale,
-                    height: 60 + 60 * fluffScale
-                )
-                .offset(y: -10)
-
-            // Fluffy fur wisps (more appear as grooming progresses)
-            if fluffScale > 0.4 {
-                ForEach(0..<5, id: \.self) { i in
-                    Ellipse()
-                        .fill(bodyColor.opacity(0.75))
-                        .frame(width: 24 + CGFloat(i) * 4, height: 18)
-                        .offset(
-                            x: cos(CGFloat(i) / 5.0 * .pi * 2) * 45 * fluffScale,
-                            y: sin(CGFloat(i) / 5.0 * .pi * 2) * 35 * fluffScale - 10
-                        )
-                }
-            }
-
-            // Sparkle on done
-            if isDone {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 40))
-                    .foregroundColor(Color(red: 0.95, green: 0.85, blue: 0.20))
-                    .offset(y: -50)
-            }
+                .frame(width: 30, height: 20)
+            // Stem
+            RoundedRectangle(cornerRadius: 1)
+                .fill(Color(red: 0.40, green: 0.24, blue: 0.08))
+                .frame(width: 1.5, height: 12)
+                .offset(y: 12)
+            // Vein
+            RoundedRectangle(cornerRadius: 0.5)
+                .fill(Color.white.opacity(0.35))
+                .frame(width: 20, height: 1)
         }
+    }
+}
+
+// MARK: - BrushView
+// Visual brush cursor following the drag gesture.
+private struct BrushView: View {
+    var body: some View {
+        ZStack {
+            // Brush head
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(red: 0.85, green: 0.72, blue: 0.45))
+                .frame(width: 52, height: 22)
+                .overlay(
+                    // Bristles
+                    HStack(spacing: 3) {
+                        ForEach(0..<9, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color(red: 0.65, green: 0.50, blue: 0.25))
+                                .frame(width: 3, height: 14)
+                                .offset(y: 6)
+                        }
+                    }
+                )
+            // Handle stub
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color(red: 0.60, green: 0.38, blue: 0.15))
+                .frame(width: 14, height: 38)
+                .offset(y: 28)
+        }
+        .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 2)
     }
 }
 
 // MARK: - SparkleParticle
+
 private struct SparkleParticle: Identifiable {
     let id: UUID
     let position: CGPoint
