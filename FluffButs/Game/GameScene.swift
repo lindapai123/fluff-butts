@@ -65,6 +65,8 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         setupDog()
         setupCamera()
         setupHUD()
+
+
     }
 
     // MARK: - Physics World
@@ -265,6 +267,9 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     private func setupHUD() {
         setupBoneTray()
         setupSwipeHint()
+        // DEBUG: pre-place a bone and auto-start
+        let t = TreatNode(); t.position = CGPoint(x: 400, y: groundY + 22); addChild(t); treats.append(t)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.startGame() }
     }
 
     // ── Bone tray at top ──────────────────────────────────────────────────────
@@ -334,7 +339,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         let bg = SKShapeNode(rectOf: CGSize(width: 260, height: 34), cornerRadius: 17)
         bg.fillColor = SKColor(white: 0, alpha: 0.40)
         bg.strokeColor = .clear
-        let lbl = SKLabelNode(text: "Tap above your dog to jump!")
+        let lbl = SKLabelNode(text: "Hit JUMP button to leap over rocks!")
         lbl.fontSize = 13
         lbl.fontName = UIFont.systemFont(ofSize: 1, weight: .medium).fontName
         lbl.fontColor = .white
@@ -349,6 +354,45 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     }
 
     // ── Start button ──────────────────────────────────────────────────────────
+
+    private func showJumpButton() {
+        guard gameCamera.childNode(withName: "jumpBtn") == nil else { return }
+
+        let size: CGFloat = 72
+        let circle = SKShapeNode(circleOfRadius: size / 2)
+        circle.fillColor   = SKColor(red: 0.20, green: 0.45, blue: 0.95, alpha: 0.90)
+        circle.strokeColor = SKColor(white: 1.0, alpha: 0.35)
+        circle.lineWidth   = 2.5
+        circle.name        = "jumpBtn"
+        // Bottom-right corner
+        circle.position    = CGPoint(x: self.size.width / 2 - 60, y: -self.size.height / 2 + 80)
+        circle.zPosition   = 20
+
+        let arrow = SKShapeNode()
+        let p = CGMutablePath()
+        p.move(to:    CGPoint(x:  0, y:  18))
+        p.addLine(to: CGPoint(x:  16, y: -10))
+        p.addLine(to: CGPoint(x:  0, y:  -3))
+        p.addLine(to: CGPoint(x: -16, y: -10))
+        p.closeSubpath()
+        arrow.path        = p
+        arrow.fillColor   = .white
+        arrow.strokeColor = .clear
+        circle.addChild(arrow)
+
+        let lbl = SKLabelNode(text: "JUMP")
+        lbl.fontSize = 11
+        lbl.fontName = UIFont.boldSystemFont(ofSize: 1).fontName
+        lbl.fontColor = SKColor(white: 1, alpha: 0.85)
+        lbl.verticalAlignmentMode   = .center
+        lbl.horizontalAlignmentMode = .center
+        lbl.position = CGPoint(x: 0, y: -28)
+        circle.addChild(lbl)
+
+        circle.alpha = 0
+        gameCamera.addChild(circle)
+        circle.run(SKAction.fadeIn(withDuration: 0.3))
+    }
 
     private func showStartButton() {
         guard gameCamera.childNode(withName: "startBtn") == nil else { return }
@@ -381,6 +425,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         // Remove start button + tray label
         gameCamera.childNode(withName: "startBtn")?.removeFromParent()
         gameCamera.childNode(withName: "trayBG")?.childNode(withName: "trayLabel")?.removeFromParent()
+        showJumpButton()
 
         // Update tray label to show placed count
         updateBoneCounterHUD()
@@ -451,6 +496,19 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
             return
         }
 
+        // Check JUMP button (only during active game)
+        if gameStarted && !isCourseComplete,
+           let jumpBtn = gameCamera.childNode(withName: "jumpBtn"),
+           jumpBtn.contains(camLoc) {
+            dogNode.jump()
+            // Flash the button
+            jumpBtn.run(SKAction.sequence([
+                SKAction.scale(to: 0.88, duration: 0.06),
+                SKAction.scale(to: 1.0,  duration: 0.10)
+            ]))
+            return
+        }
+
         // Check tray bones (only if game not started)
         if !gameStarted, let trayBG = gameCamera.childNode(withName: "trayBG") {
             let trayLoc = touch.location(in: trayBG)
@@ -513,14 +571,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
             return
         }
 
-        // During active game: tap ABOVE the dog → jump
-        if gameStarted && !isCourseComplete {
-            // Convert dog's world position to camera space to compare with tap
-            let dogInCam = gameCamera.convert(dogNode.position, from: self)
-            if camLoc.y > dogInCam.y {
-                dogNode.jump()
-            }
-        }
+        // Jump button handled in touchesBegan for responsiveness
     }
 
     // MARK: - Placement marker
