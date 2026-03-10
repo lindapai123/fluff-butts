@@ -275,12 +275,13 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     // ── Bone tray at top ──────────────────────────────────────────────────────
 
     private func setupBoneTray() {
-        let trayW: CGFloat = 280, trayH: CGFloat = 56
+        let trayW: CGFloat = 240, trayH: CGFloat = 72
         let trayBG = SKShapeNode(rectOf: CGSize(width: trayW, height: trayH), cornerRadius: 16)
         trayBG.fillColor = SKColor(white: 0, alpha: 0.45)
         trayBG.strokeColor = SKColor(white: 1, alpha: 0.20)
         trayBG.lineWidth = 1.5
-        trayBG.position = CGPoint(x: 0, y: size.height/2 - 220)
+        // Bottom-left — mirror of the jump button which sits bottom-right
+        trayBG.position = CGPoint(x: -(size.width / 2 - trayW / 2 - 16), y: -size.height / 2 + 80)
         trayBG.name = "trayBG"
         gameCamera.addChild(trayBG)
 
@@ -290,7 +291,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         label.fontColor = SKColor(white: 0.85, alpha: 1)
         label.verticalAlignmentMode = .center
         label.horizontalAlignmentMode = .center
-        label.position = CGPoint(x: 0, y: -trayH/2 + 10)
+        label.position = CGPoint(x: 0, y: -trayH / 2 + 12)
         label.name = "trayLabel"
         trayBG.addChild(label)
 
@@ -572,7 +573,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
             // Only if touch is in the course area (below tray, not on jump button)
             let jumpBtnFrame = gameCamera.childNode(withName: "jumpBtn")?.frame ?? .zero
             let onJumpBtn = gameCamera.childNode(withName: "jumpBtn")?.contains(camLoc) ?? false
-            let inTrayArea = camLoc.y > size.height / 2 - 260
+            let inTrayArea = camLoc.y < -size.height / 2 + 130
             if !onJumpBtn && !inTrayArea {
                 if let slotIdx = traySlotUsed.firstIndex(of: false) {
                     traySlotUsed[slotIdx] = true
