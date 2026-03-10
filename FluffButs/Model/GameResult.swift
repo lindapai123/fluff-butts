@@ -26,11 +26,20 @@ struct GameResult {
     // MARK: - Grooming Tier
 
     var groomingTitle: String {
-        if gotWet && breed == .lincoln { return "MAXIMUM BLOW DRY 💦" }
+        if gotWet && breed == .lincoln { return "MAXIMUM BLOW DRY!" }
         switch stars {
-        case 3: return "Already Fluffy! ✨"
-        case 2: return "Needs a Brush 🪮"
-        default: return "Full Blow Dry! 💨"
+        case 3: return "Already Fluffy!"
+        case 2: return "Needs a Brush"
+        default: return "Full Blow Dry!"
+        }
+    }
+
+    var groomingTitleIcon: String {
+        if gotWet && breed == .lincoln { return "drop.fill" }
+        switch stars {
+        case 3: return "sparkles"
+        case 2: return "comb.fill"
+        default: return "wind"
         }
     }
 

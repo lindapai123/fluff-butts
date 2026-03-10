@@ -33,11 +33,15 @@ struct GroomingView: View {
 
                 // ── Header ────────────────────────────────────────────
                 VStack(spacing: 6) {
-                    Text(result.groomingTitle)
-                        .font(.system(size: 22, weight: .heavy, design: .rounded))
-                        .foregroundColor(Color(red: 0.40, green: 0.18, blue: 0.60))
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 56)
+                    HStack(spacing: 8) {
+                        Image(systemName: result.groomingTitleIcon)
+                            .font(.system(size: 20, weight: .bold))
+                        Text(result.groomingTitle)
+                            .font(.system(size: 22, weight: .heavy, design: .rounded))
+                    }
+                    .foregroundColor(Color(red: 0.40, green: 0.18, blue: 0.60))
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 56)
 
                     // Stars
                     HStack(spacing: 4) {
@@ -86,8 +90,9 @@ struct GroomingView: View {
 
                     // Sparkles
                     ForEach(sparkles) { s in
-                        Text("✨")
+                        Image(systemName: "sparkles")
                             .font(.system(size: s.size))
+                            .foregroundColor(.yellow)
                             .position(s.position)
                             .opacity(s.opacity)
                             .allowsHitTesting(false)
@@ -123,7 +128,7 @@ struct GroomingView: View {
                 if !isGroomingDone {
                     VStack(spacing: 6) {
                         Text(removedCount == 0
-                             ? "Drag the brush to groom! 🪮"
+                             ? "Drag the brush to groom!"
                              : "\(totalCount - removedCount) more to go…")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundColor(Color(red: 0.40, green: 0.22, blue: 0.58))
@@ -151,10 +156,16 @@ struct GroomingView: View {
                 // ── Done message ──────────────────────────────────────
                 if showResult {
                     VStack(spacing: 4) {
-                        Text("✨ Gorgeous! ✨")
-                            .font(.system(size: 26, weight: .heavy, design: .rounded))
-                            .foregroundColor(Color(red: 0.50, green: 0.20, blue: 0.72))
-                        Text("What a fluffy butt! 🐾")
+                        HStack(spacing: 6) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 20, weight: .bold))
+                            Text("Gorgeous!")
+                                .font(.system(size: 26, weight: .heavy, design: .rounded))
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 20, weight: .bold))
+                        }
+                        .foregroundColor(Color(red: 0.50, green: 0.20, blue: 0.72))
+                        Text("What a fluffy butt!")
                             .font(.system(size: 15, weight: .medium, design: .rounded))
                             .foregroundColor(Color(red: 0.50, green: 0.35, blue: 0.62))
                     }
