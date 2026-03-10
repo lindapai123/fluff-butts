@@ -284,7 +284,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         trayBG.name = "trayBG"
         gameCamera.addChild(trayBG)
 
-        let label = SKLabelNode(text: "Drag bones to place them")
+        let label = SKLabelNode(text: "Drag a bone to start!")
         label.fontSize = 11
         label.fontName = UIFont.systemFont(ofSize: 1, weight: .medium).fontName
         label.fontColor = SKColor(white: 0.85, alpha: 1)
@@ -422,8 +422,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         guard !gameStarted else { return }
         gameStarted = true
 
-        // Remove start button + tray label
-        gameCamera.childNode(withName: "startBtn")?.removeFromParent()
+        // Remove tray instruction label now that game is running
         gameCamera.childNode(withName: "trayBG")?.childNode(withName: "trayLabel")?.removeFromParent()
         showJumpButton()
 
@@ -489,13 +488,6 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         let camLoc   = touch.location(in: gameCamera)
         let worldLoc = touch.location(in: self)
 
-        // Check START button
-        if let startBtn = gameCamera.childNode(withName: "startBtn"),
-           startBtn.contains(camLoc) {
-            startGame()
-            return
-        }
-
         // Check JUMP button (only during active game)
         if gameStarted && !isCourseComplete,
            let jumpBtn = gameCamera.childNode(withName: "jumpBtn"),
@@ -560,7 +552,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
                 if gameStarted {
                     seekNearestTreat()  // redirect dog to new bone immediately
                 } else {
-                    showStartButton()
+                    startGame()         // first bone placed — go!
                 }
             } else {
                 // Dropped back in tray area — return slot
