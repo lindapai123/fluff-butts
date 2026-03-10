@@ -1,26 +1,19 @@
 import SpriteKit
+import UIKit
 
 // MARK: - TreatNode
-// A bone treat dropped by the player. Stays in place (isDynamic = false)
-// and plays a collect animation when the dog reaches it.
+// A bone treat dropped by the player. Drawn as a proper bone shape using SKShapeNode.
 @MainActor
 final class TreatNode: SKNode {
 
     // MARK: Public State
     private(set) var isCollected: Bool = false
 
-    // MARK: Private
-    private let label: SKLabelNode
-
     // MARK: - Init
 
     override init() {
-        label = SKLabelNode(text: "🦴")
-        label.fontSize = 36
-        label.verticalAlignmentMode = .center
-        label.horizontalAlignmentMode = .center
         super.init()
-        addChild(label)
+        setupVisuals()
         setupPhysics()
     }
 
@@ -28,7 +21,37 @@ final class TreatNode: SKNode {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // MARK: - Physics Setup
+    // MARK: - Visuals
+
+    private func setupVisuals() {
+        // Shaft
+        let shaft = SKShapeNode(rectOf: CGSize(width: 28, height: 10), cornerRadius: 4)
+        shaft.fillColor = UIColor(white: 0.94, alpha: 1.0)
+        shaft.strokeColor = UIColor(white: 0.75, alpha: 1.0)
+        shaft.lineWidth = 1
+        addChild(shaft)
+
+        // Four knobs at ends (classic bone look)
+        let knobPositions: [(CGFloat, CGFloat)] = [(-16, 6), (-16, -6), (16, 6), (16, -6)]
+        for (kx, ky) in knobPositions {
+            let knob = SKShapeNode(circleOfRadius: 7)
+            knob.fillColor = UIColor(white: 0.96, alpha: 1.0)
+            knob.strokeColor = UIColor(white: 0.75, alpha: 1.0)
+            knob.lineWidth = 1
+            knob.position = CGPoint(x: kx, y: ky)
+            addChild(knob)
+        }
+
+        // Small drop shadow under bone
+        let shadow = SKShapeNode(ellipseOf: CGSize(width: 38, height: 8))
+        shadow.fillColor = UIColor(white: 0, alpha: 0.12)
+        shadow.strokeColor = .clear
+        shadow.position = CGPoint(x: 0, y: -12)
+        shadow.zPosition = -1
+        addChild(shadow)
+    }
+
+    // MARK: - Physics
 
     private func setupPhysics() {
         let body = SKPhysicsBody(circleOfRadius: 18)
@@ -42,15 +65,12 @@ final class TreatNode: SKNode {
 
     // MARK: - Collection
 
-    /// Plays a scale-down + fade-out animation then removes the node.
     func collect() {
         guard !isCollected else { return }
         isCollected = true
-
         let scaleDown = SKAction.scale(to: 0.1, duration: 0.25)
         let fadeOut   = SKAction.fadeAlpha(to: 0, duration: 0.25)
         let shrinkFade = SKAction.group([scaleDown, fadeOut])
-        let remove     = SKAction.removeFromParent()
-        run(SKAction.sequence([shrinkFade, remove]))
+        run(SKAction.sequence([shrinkFade, SKAction.removeFromParent()]))
     }
 }
