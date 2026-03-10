@@ -18,6 +18,9 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     private var treats: [TreatNode] = []
     private var gameCamera: SKCameraNode!
 
+    // MARK: Breed
+    private let breed: DogBreed
+
     // MARK: Layout
     // Ground surface Y in scene coordinates (Y-up)
     // We position everything relative to this.
@@ -25,6 +28,18 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
 
     // MARK: State
     private var isCourseComplete = false
+
+    // MARK: - Init
+
+    init(size: CGSize, breed: DogBreed = .memphis) {
+        self.breed = breed
+        super.init(size: size)
+    }
+
+    required init?(coder: NSCoder) {
+        self.breed = .memphis
+        super.init(coder: coder)
+    }
 
     // MARK: - Lifecycle
 
@@ -169,7 +184,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     // MARK: - Dog
 
     private func setupDog() {
-        dogNode = DogNode()
+        dogNode = DogNode(breed: breed)
         // Start at left side, sitting on the ground
         dogNode.position = CGPoint(x: 60, y: groundY + 50)
         addChild(dogNode)

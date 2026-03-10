@@ -8,9 +8,15 @@ import SpriteKit
 // @State storage persists across renders.
 struct GameView: View {
 
+    let breed: DogBreed
     @Environment(\.dismiss) private var dismiss
 
-    @State private var scene: SKScene = GameView.makeScene()
+    @State private var scene: SKScene
+
+    init(breed: DogBreed) {
+        self.breed = breed
+        _scene = State(initialValue: GameView.makeScene(breed: breed))
+    }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -55,8 +61,8 @@ struct GameView: View {
 
     // MARK: - Scene Factory
 
-    private static func makeScene() -> SKScene {
-        let s = GameScene(size: CGSize(width: 393, height: 852))
+    private static func makeScene(breed: DogBreed) -> SKScene {
+        let s = GameScene(size: CGSize(width: 393, height: 852), breed: breed)
         s.scaleMode = .resizeFill
         s.backgroundColor = SKColor(red: 0.40, green: 0.68, blue: 0.30, alpha: 1.0)
         return s
@@ -64,5 +70,5 @@ struct GameView: View {
 }
 
 #Preview {
-    GameView()
+    GameView(breed: .memphis)
 }

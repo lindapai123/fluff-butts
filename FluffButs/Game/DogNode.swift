@@ -3,19 +3,22 @@ import UIKit
 
 // MARK: - DogNode
 // Drawn entirely with SKShapeNode so it renders on every device & simulator.
+// Supports multiple breeds via DogBreed.
 @MainActor
 final class DogNode: SKNode {
 
     // MARK: Public State
     private(set) var isMoving: Bool = false
     var targetPosition: CGPoint?
+    let breed: DogBreed
 
     // MARK: Private
-    private let bodyNode: SKNode   // container so we can flip xScale
+    private let bodyNode: SKNode   // container — flip xScale to change direction
 
     // MARK: - Init
 
-    override init() {
+    init(breed: DogBreed = .memphis) {
+        self.breed = breed
         bodyNode = SKNode()
         super.init()
         addChild(bodyNode)
@@ -30,19 +33,20 @@ final class DogNode: SKNode {
     // MARK: - Drawing
 
     private func drawDog() {
-        let bodyColor   = UIColor(red: 0.82, green: 0.60, blue: 0.22, alpha: 1.0)  // golden
-        let strokeColor = UIColor(red: 0.58, green: 0.38, blue: 0.08, alpha: 1.0)
-        let noseColor   = UIColor(red: 0.20, green: 0.12, blue: 0.05, alpha: 1.0)
+        let bodyColor   = breed.bodyColor
+        let strokeColor = breed.strokeColor
+        let earColor    = breed.earColor
+        let snoutColor  = breed.snoutColor
+        let noseColor   = UIColor(red: 0.10, green: 0.06, blue: 0.02, alpha: 1.0)
 
-        // Body (large ellipse)
+        // Body
         let body = SKShapeNode(ellipseOf: CGSize(width: 52, height: 36))
         body.fillColor = bodyColor
         body.strokeColor = strokeColor
         body.lineWidth = 2
-        body.position = CGPoint(x: 0, y: 0)
         bodyNode.addChild(body)
 
-        // Head (circle)
+        // Head
         let head = SKShapeNode(circleOfRadius: 18)
         head.fillColor = bodyColor
         head.strokeColor = strokeColor
@@ -52,7 +56,7 @@ final class DogNode: SKNode {
 
         // Snout
         let snout = SKShapeNode(ellipseOf: CGSize(width: 16, height: 10))
-        snout.fillColor = UIColor(red: 0.90, green: 0.72, blue: 0.35, alpha: 1.0)
+        snout.fillColor = snoutColor
         snout.strokeColor = strokeColor
         snout.lineWidth = 1.5
         snout.position = CGPoint(x: 40, y: 6)
@@ -69,14 +73,14 @@ final class DogNode: SKNode {
         let earPath = CGMutablePath()
         earPath.addEllipse(in: CGRect(x: -6, y: -14, width: 12, height: 20))
         let ear = SKShapeNode(path: earPath)
-        ear.fillColor = UIColor(red: 0.70, green: 0.45, blue: 0.10, alpha: 1.0)
+        ear.fillColor = earColor
         ear.strokeColor = strokeColor
         ear.lineWidth = 1.5
         ear.position = CGPoint(x: 22, y: 22)
         ear.zRotation = 0.3
         bodyNode.addChild(ear)
 
-        // Tail (curved upward)
+        // Tail
         let tailPath = CGMutablePath()
         tailPath.move(to: CGPoint(x: -26, y: 4))
         tailPath.addQuadCurve(to: CGPoint(x: -38, y: 22),
@@ -88,7 +92,7 @@ final class DogNode: SKNode {
         tail.lineCap = .round
         bodyNode.addChild(tail)
 
-        // Legs (4 rectangles)
+        // Legs
         for (lx, ly): (CGFloat, CGFloat) in [(-14, -18), (-4, -18), (10, -18), (20, -18)] {
             let leg = SKShapeNode(rectOf: CGSize(width: 8, height: 18), cornerRadius: 3)
             leg.fillColor = bodyColor
@@ -111,6 +115,11 @@ final class DogNode: SKNode {
         shine.strokeColor = .clear
         shine.position = CGPoint(x: 37.5, y: 16.5)
         bodyNode.addChild(shine)
+
+        // Idle bounce animation
+        let up   = SKAction.moveBy(x: 0, y: 3, duration: 0.5)
+        let down = SKAction.moveBy(x: 0, y: -3, duration: 0.5)
+        bodyNode.run(SKAction.repeatForever(SKAction.sequence([up, down])))
     }
 
     // MARK: - Physics
@@ -128,12 +137,18 @@ final class DogNode: SKNode {
         physicsBody = body
     }
 
-    // MARK: - Movement
+    // MARK: - Direction
+
+    func faceDirection(goingRight: Bool) {
+        bodyNode.xScale = goingRight ? 1 : -1
+    }
+
+    // MARK: - Movement (physics-driven, for GameScene)
 
     func moveTo(position: CGPoint) {
         targetPosition = position
         isMoving = true
-        bodyNode.xScale = position.x < self.position.x ? -1 : 1
+        faceDirection(goingRight: position.x >= self.position.x)
     }
 
     func stopMoving() {

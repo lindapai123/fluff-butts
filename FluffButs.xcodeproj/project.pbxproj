@@ -11,10 +11,13 @@
 		15E1CA8503DA62A1382D6318 /* TreatNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF839F1A0D0B6C4830855A30 /* TreatNode.swift */; };
 		1BD965A00A5796D2672DF27B /* FluffButsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21707053A44D131D10E71EE8 /* FluffButsApp.swift */; };
 		656366CD5F92AC97DBF1781E /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2364C7CE5F995CF918DD0509 /* GameView.swift */; };
+		65F5FC20CF7C228D3DF31B56 /* DogWalkScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1E2B21AFFEC2B082C6F7681 /* DogWalkScene.swift */; };
 		88821E5FB05F1101C34E274E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3ED898D8BE8905DD5BFEED /* ContentView.swift */; };
 		8BD4A7EAC19CD5EE6F38FC97 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39DCA79A833EC0E8070CC06E /* GameScene.swift */; };
 		930AC58D73B7D28CCA1C5D80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8C7F5C13265DCA54AC76CA26 /* Assets.xcassets */; };
+		93CCE9038DDC08759C2CD3A5 /* DogBreed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57D170B8D5194A516FF1C7AF /* DogBreed.swift */; };
 		9CFB8674F47BCAB5ECF957B4 /* SpriteKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B810E3943FCA1F832A6F237 /* SpriteKit.framework */; };
+		B45A5A716D12154379827B3C /* DogSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768653599E1BF9815530F2DB /* DogSelectionView.swift */; };
 		D402F81D6EC86EA9C878D26E /* DogNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B2B5F95836C44AFCA19ED98 /* DogNode.swift */; };
 /* End PBXBuildFile section */
 
@@ -24,9 +27,12 @@
 		2364C7CE5F995CF918DD0509 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		2B2B5F95836C44AFCA19ED98 /* DogNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogNode.swift; sourceTree = "<group>"; };
 		39DCA79A833EC0E8070CC06E /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		57D170B8D5194A516FF1C7AF /* DogBreed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogBreed.swift; sourceTree = "<group>"; };
 		5B810E3943FCA1F832A6F237 /* SpriteKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SpriteKit.framework; path = System/Library/Frameworks/SpriteKit.framework; sourceTree = SDKROOT; };
+		768653599E1BF9815530F2DB /* DogSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogSelectionView.swift; sourceTree = "<group>"; };
 		786C4AC60C66C851C4201831 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8C7F5C13265DCA54AC76CA26 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1E2B21AFFEC2B082C6F7681 /* DogWalkScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogWalkScene.swift; sourceTree = "<group>"; };
 		BC3ED898D8BE8905DD5BFEED /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C7D51609A8461B35B8430FD7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		FF839F1A0D0B6C4830855A30 /* TreatNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreatNode.swift; sourceTree = "<group>"; };
@@ -66,9 +72,11 @@
 			children = (
 				8C7F5C13265DCA54AC76CA26 /* Assets.xcassets */,
 				BC3ED898D8BE8905DD5BFEED /* ContentView.swift */,
+				768653599E1BF9815530F2DB /* DogSelectionView.swift */,
 				21707053A44D131D10E71EE8 /* FluffButsApp.swift */,
 				786C4AC60C66C851C4201831 /* Info.plist */,
 				660C24EDB1AC5477A0820C9A /* Game */,
+				E0EADDB4D38D5B8B0B8FA12A /* Model */,
 				2C88FC434506649D0C5F3F51 /* Preview Content */,
 			);
 			path = FluffButs;
@@ -78,6 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				2B2B5F95836C44AFCA19ED98 /* DogNode.swift */,
+				A1E2B21AFFEC2B082C6F7681 /* DogWalkScene.swift */,
 				39DCA79A833EC0E8070CC06E /* GameScene.swift */,
 				2364C7CE5F995CF918DD0509 /* GameView.swift */,
 				FF839F1A0D0B6C4830855A30 /* TreatNode.swift */,
@@ -91,6 +100,14 @@
 				0F821A57952C20B534A05B9D /* FluffButs.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E0EADDB4D38D5B8B0B8FA12A /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				57D170B8D5194A516FF1C7AF /* DogBreed.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 		FA3F7C4D99A6A870AFE2819E /* Frameworks */ = {
@@ -171,7 +188,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				88821E5FB05F1101C34E274E /* ContentView.swift in Sources */,
+				93CCE9038DDC08759C2CD3A5 /* DogBreed.swift in Sources */,
 				D402F81D6EC86EA9C878D26E /* DogNode.swift in Sources */,
+				B45A5A716D12154379827B3C /* DogSelectionView.swift in Sources */,
+				65F5FC20CF7C228D3DF31B56 /* DogWalkScene.swift in Sources */,
 				1BD965A00A5796D2672DF27B /* FluffButsApp.swift in Sources */,
 				8BD4A7EAC19CD5EE6F38FC97 /* GameScene.swift in Sources */,
 				656366CD5F92AC97DBF1781E /* GameView.swift in Sources */,
