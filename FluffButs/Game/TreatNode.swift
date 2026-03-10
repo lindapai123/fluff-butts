@@ -3,6 +3,7 @@ import SpriteKit
 // MARK: - TreatNode
 // A bone treat dropped by the player. Stays in place (isDynamic = false)
 // and plays a collect animation when the dog reaches it.
+@MainActor
 final class TreatNode: SKNode {
 
     // MARK: Public State

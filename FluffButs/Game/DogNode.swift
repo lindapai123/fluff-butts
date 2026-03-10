@@ -3,6 +3,7 @@ import SpriteKit
 // MARK: - DogNode
 // The player's dog character. Uses physics velocity for movement so gravity
 // and ground collision work correctly alongside the action system.
+@MainActor
 final class DogNode: SKNode {
 
     // MARK: Public State
