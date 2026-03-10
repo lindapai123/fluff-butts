@@ -567,10 +567,47 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
             return
         }
 
-        // Jump button handled in touchesBegan for responsiveness
+        // During active game: tap the course area to instantly drop a bone
+        if gameStarted && !isCourseComplete && draggedBoneNode == nil {
+            // Only if touch is in the course area (below tray, not on jump button)
+            let jumpBtnFrame = gameCamera.childNode(withName: "jumpBtn")?.frame ?? .zero
+            let onJumpBtn = gameCamera.childNode(withName: "jumpBtn")?.contains(camLoc) ?? false
+            let inTrayArea = camLoc.y > size.height / 2 - 130
+            if !onJumpBtn && !inTrayArea {
+                if let slotIdx = traySlotUsed.firstIndex(of: false) {
+                    traySlotUsed[slotIdx] = true
+                    removeTrayBoneVisual(slotIndex: slotIdx)
+                    let treat = TreatNode()
+                    treat.position = CGPoint(x: worldLoc.x, y: groundY + 22)
+                    addChild(treat)
+                    treats.append(treat)
+                    showPlacementMarker(at: treat.position)
+                    seekNearestTreat()
+                }
+            }
+        }
     }
 
     // MARK: - Placement marker
+
+    private func removeTrayBoneVisual(slotIndex: Int) {
+        if let trayBG = gameCamera.childNode(withName: "trayBG") {
+            trayBG.childNode(withName: "trayBone_\(slotIndex)")?.removeFromParent()
+        }
+    }
+
+    private func refillTraySlot() {
+        // Return the first used slot to the tray
+        guard let slotIdx = traySlotUsed.firstIndex(of: true) else { return }
+        traySlotUsed[slotIdx] = false
+        if let trayBG = gameCamera.childNode(withName: "trayBG") {
+            let bone = makeTrayBone(slotIndex: slotIdx)
+            bone.position = slotPosition(for: slotIdx, in: trayBG.frame)
+            bone.setScale(0.1)
+            trayBG.addChild(bone)
+            bone.run(SKAction.scale(to: 1.0, duration: 0.2))
+        }
+    }
 
     private func showPlacementMarker(at pos: CGPoint) {
         // Small glowing ring to show where the bone landed
@@ -615,11 +652,10 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
                              treat.position.y - dogNode.position.y)
             if dist < 48 {
                 treat.collect()
-                if treats.firstIndex(where: { $0 === treat }).map({ $0 < GameScene.totalTrayBones }) == true {
-                    bonesCollected += 1
-                    updateBoneCounterHUD()
-                    showCollectStar()
-                }
+                bonesCollected += 1
+                updateBoneCounterHUD()
+                showCollectStar()
+                refillTraySlot()   // bone collected → slot returns to tray
                 seekNearestTreat()
             }
         }
