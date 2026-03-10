@@ -36,6 +36,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         setupFinishLine()
         setupDog()
         setupCamera()
+        setupInitialBones()
         setupHint()
     }
 
@@ -138,7 +139,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
 
         let flagLabel = SKLabelNode(text: "FINISH!")
         flagLabel.fontSize = 20
-        flagLabel.fontName = "AvenirNext-Bold"
+        flagLabel.fontName = UIFont.boldSystemFont(ofSize: 1).fontName
         flagLabel.fontColor = .white
         flagLabel.verticalAlignmentMode = .center
         flagLabel.horizontalAlignmentMode = .center
@@ -174,6 +175,18 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         addChild(dogNode)
     }
 
+    // MARK: - Pre-placed Bones
+
+    private func setupInitialBones() {
+        let bonePositions: [CGFloat] = [160, 260, 380]
+        for x in bonePositions {
+            let treat = TreatNode()
+            treat.position = CGPoint(x: x, y: groundY + 22)
+            addChild(treat)
+            treats.append(treat)
+        }
+    }
+
     // MARK: - Camera
 
     private func setupCamera() {
@@ -195,7 +208,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
 
         let hint = SKLabelNode(text: "Tap anywhere to drop a bone!")
         hint.fontSize = 15
-        hint.fontName = "AvenirNext-Medium"
+        hint.fontName = UIFont.systemFont(ofSize: 1, weight: .medium).fontName
         hint.fontColor = .white
         hint.verticalAlignmentMode = .center
         hint.horizontalAlignmentMode = .center
@@ -273,7 +286,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
 
         let celebrate = SKLabelNode(text: "Course Complete!")
         celebrate.fontSize = 28
-        celebrate.fontName = "AvenirNext-Bold"
+        celebrate.fontName = UIFont.boldSystemFont(ofSize: 1).fontName
         celebrate.fontColor = .white
         celebrate.verticalAlignmentMode = .center
         celebrate.horizontalAlignmentMode = .center

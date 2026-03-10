@@ -40,12 +40,16 @@ struct GameView: View {
             }
 
             // Title bar
-            Text("Fluff Butts 🐾")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 62)
+            HStack(spacing: 6) {
+                Image(systemName: "pawprint.fill")
+                    .font(.system(size: 16, weight: .bold))
+                Text("Fluff Butts")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+            }
+            .foregroundColor(.white)
+            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 62)
         }
     }
 
