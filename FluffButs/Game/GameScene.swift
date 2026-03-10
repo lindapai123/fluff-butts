@@ -280,7 +280,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         trayBG.fillColor = SKColor(white: 0, alpha: 0.45)
         trayBG.strokeColor = SKColor(white: 1, alpha: 0.20)
         trayBG.lineWidth = 1.5
-        trayBG.position = CGPoint(x: 0, y: size.height/2 - 90)
+        trayBG.position = CGPoint(x: 0, y: size.height/2 - 220)
         trayBG.name = "trayBG"
         gameCamera.addChild(trayBG)
 
@@ -572,7 +572,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
             // Only if touch is in the course area (below tray, not on jump button)
             let jumpBtnFrame = gameCamera.childNode(withName: "jumpBtn")?.frame ?? .zero
             let onJumpBtn = gameCamera.childNode(withName: "jumpBtn")?.contains(camLoc) ?? false
-            let inTrayArea = camLoc.y > size.height / 2 - 130
+            let inTrayArea = camLoc.y > size.height / 2 - 260
             if !onJumpBtn && !inTrayArea {
                 if let slotIdx = traySlotUsed.firstIndex(of: false) {
                     traySlotUsed[slotIdx] = true
