@@ -27,6 +27,10 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     private var gotWet = false
     private var lastUpdateTime: TimeInterval = 0
 
+    // MARK: Anti-stuck
+    private var stuckTimer: TimeInterval = 0
+    private var lastDogX: CGFloat = 0
+
     // MARK: Bones
     static let totalTrayBones = 5
     private var bonesCollected = 0
@@ -161,6 +165,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         rock.addChild(hi)
         let rb = SKPhysicsBody(rectangleOf: CGSize(width: w, height: h))
         rb.isDynamic = false
+        rb.friction = 0.0          // slippery top — dog slides off instead of sticking
         rb.categoryBitMask = PhysicsCategory.obstacle
         rb.collisionBitMask = PhysicsCategory.dog
         rb.contactTestBitMask = PhysicsCategory.dog
@@ -647,6 +652,19 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
 
         guard gameStarted else { return }
         dogNode.updateMovement(deltaTime: dt)
+
+        // Anti-stuck: if dog barely moved horizontally, nudge it forward
+        let movedX = abs(dogNode.position.x - lastDogX)
+        if movedX < 2 && !treats.filter({ !$0.isCollected }).isEmpty {
+            stuckTimer += dt
+            if stuckTimer > 0.4 {
+                dogNode.physicsBody?.applyImpulse(CGVector(dx: 200, dy: 60))
+                stuckTimer = 0
+            }
+        } else {
+            stuckTimer = 0
+        }
+        lastDogX = dogNode.position.x
 
         for treat in treats where !treat.isCollected {
             let dist = hypot(treat.position.x - dogNode.position.x,
