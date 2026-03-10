@@ -65,7 +65,7 @@ struct GroomingView: View {
                 // ── Grooming canvas ───────────────────────────────────
                 ZStack {
                     // Real golden retriever butt photo
-                    Image("GoldenRetrieverButt")
+                    Image(result.breed == .lincoln ? "LincolnButt" : "GoldenRetrieverButt")
                         .resizable()
                         .scaledToFill()
                         .frame(width: 320, height: 340)
