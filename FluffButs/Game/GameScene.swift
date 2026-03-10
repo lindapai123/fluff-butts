@@ -144,7 +144,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     // MARK: - Course
 
     private func setupCourse() {
-        for (x,w,h): (CGFloat,CGFloat,CGFloat) in [(300,52,64),(720,66,88),(980,50,72),(1280,64,96)] {
+        for (x,w,h): (CGFloat,CGFloat,CGFloat) in [(300,32,38),(720,38,48),(980,30,40),(1280,36,52)] {
             addRock(x: x, w: w, h: h)
         }
         for (x,w): (CGFloat,CGFloat) in [(580,100),(1130,80)] {
@@ -735,7 +735,10 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
 
     private func handleRockHit() {
         hitObstacleCount += 1
-        dogNode.bounceBack()
+
+        // Pass current target so dog can resume after retreating 4 lengths
+        let currentTarget = dogNode.targetPosition
+        dogNode.bounceBack(resumeTarget: currentTarget)
 
         // Camera shake
         let shake = SKAction.sequence([
@@ -744,9 +747,9 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         ])
         gameCamera.run(shake)
 
-        // Re-seek nearest treat after bounce settles
+        // After retreat + turn-around, re-seek in case a new bone was placed
         run(SKAction.sequence([
-            SKAction.wait(forDuration: 0.6),
+            SKAction.wait(forDuration: 1.7),
             SKAction.run { [weak self] in self?.seekNearestTreat() }
         ]))
     }

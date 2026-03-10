@@ -269,41 +269,50 @@ final class DogNode: SKNode {
         ]))
     }
 
-    /// Called when the dog hits the side of a rock — bounces back and turns around
-    func bounceBack() {
+    /// Dog diameter in points (physics radius × 2). Used for retreat distance calc.
+    static let bodyDiameter: CGFloat = 52   // circleOfRadius: 26
+
+    /// Called when the dog hits the side of a rock.
+    /// Walks 4 full dog lengths in the opposite direction, then turns back.
+    func bounceBack(resumeTarget: CGPoint?) {
         guard let body = physicsBody else { return }
 
-        // Reverse horizontal velocity and pop upward slightly
-        let dir: CGFloat = bodyNode.xScale > 0 ? -1 : 1
-        body.velocity = CGVector(dx: dir * 320, dy: 80)
+        // Which way was the dog facing? Positive xScale = facing right.
+        let facingRight = bodyNode.xScale > 0
+        let retreatDir: CGFloat = facingRight ? -1 : 1   // opposite of travel
 
-        // Flip sprite to face the other way
-        bodyNode.xScale = -bodyNode.xScale
+        // Kill current velocity
+        body.velocity = .zero
+        stopMoving()
 
         showSpeechBubble("Oof!")
 
-        // Shake animation
-        let shake = SKAction.sequence([
-            SKAction.moveBy(x: dir * -10, y: 0, duration: 0.06),
-            SKAction.moveBy(x: dir *  10, y: 0, duration: 0.06),
-            SKAction.moveBy(x: dir *  -6, y: 0, duration: 0.05),
-        ])
-        run(shake)
+        // Flip sprite to face the retreat direction
+        bodyNode.xScale = retreatRight(retreatDir)
 
-        // Pause movement briefly so the bounce plays out, then re-seek
-        let prevTarget = targetPosition
-        stopMoving()
+        // Retreat target = 4 dog lengths behind current position
+        let retreatX = position.x + retreatDir * DogNode.bodyDiameter * 4
+        let retreatPoint = CGPoint(x: retreatX, y: position.y)
+        moveTo(position: retreatPoint)
+
+        // After enough time to cover the retreat distance, turn back around
+        // Dog moves ~160 px/s, 4 lengths = 208px → ~1.3s + small buffer
         run(SKAction.sequence([
-            SKAction.wait(forDuration: 0.5),
+            SKAction.wait(forDuration: 1.5),
             SKAction.run { [weak self] in
                 guard let self else { return }
-                // Flip back to face forward if we have a target ahead
-                if let t = prevTarget, t.x > position.x {
-                    bodyNode.xScale = abs(bodyNode.xScale)
-                }
-                if let t = prevTarget { moveTo(position: t) }
+                // Flip back to original facing direction
+                bodyNode.xScale = -retreatDir * abs(bodyNode.xScale)
+                // Resume toward the original bone target (or wherever seekNearestTreat decides)
+                if let t = resumeTarget { moveTo(position: t) }
             }
         ]))
+    }
+
+    private func retreatRight(_ retreatDir: CGFloat) -> CGFloat {
+        // xScale magnitude preserved; sign set to match retreat direction
+        // retreatDir -1 = going left = face left = negative xScale
+        return retreatDir * abs(bodyNode.xScale)
     }
 
     /// Called when Lincoln hits a water puddle
