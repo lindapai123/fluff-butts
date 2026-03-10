@@ -10,8 +10,10 @@
 		106E6F5C7DE5EFA2FE7A886E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C7D51609A8461B35B8430FD7 /* Preview Assets.xcassets */; };
 		15E1CA8503DA62A1382D6318 /* TreatNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF839F1A0D0B6C4830855A30 /* TreatNode.swift */; };
 		1BD965A00A5796D2672DF27B /* FluffButsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21707053A44D131D10E71EE8 /* FluffButsApp.swift */; };
+		45349B4E3445240D1A41E039 /* GroomingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 567952FF22784030554E00BF /* GroomingView.swift */; };
 		656366CD5F92AC97DBF1781E /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2364C7CE5F995CF918DD0509 /* GameView.swift */; };
 		65F5FC20CF7C228D3DF31B56 /* DogWalkScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1E2B21AFFEC2B082C6F7681 /* DogWalkScene.swift */; };
+		7AA4646C9078A3A0B68A5724 /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0348CD6EEA71AE8517F9471 /* GameResult.swift */; };
 		88821E5FB05F1101C34E274E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3ED898D8BE8905DD5BFEED /* ContentView.swift */; };
 		8BD4A7EAC19CD5EE6F38FC97 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39DCA79A833EC0E8070CC06E /* GameScene.swift */; };
 		930AC58D73B7D28CCA1C5D80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8C7F5C13265DCA54AC76CA26 /* Assets.xcassets */; };
@@ -27,6 +29,7 @@
 		2364C7CE5F995CF918DD0509 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		2B2B5F95836C44AFCA19ED98 /* DogNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogNode.swift; sourceTree = "<group>"; };
 		39DCA79A833EC0E8070CC06E /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		567952FF22784030554E00BF /* GroomingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroomingView.swift; sourceTree = "<group>"; };
 		57D170B8D5194A516FF1C7AF /* DogBreed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogBreed.swift; sourceTree = "<group>"; };
 		5B810E3943FCA1F832A6F237 /* SpriteKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SpriteKit.framework; path = System/Library/Frameworks/SpriteKit.framework; sourceTree = SDKROOT; };
 		768653599E1BF9815530F2DB /* DogSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogSelectionView.swift; sourceTree = "<group>"; };
@@ -35,6 +38,7 @@
 		A1E2B21AFFEC2B082C6F7681 /* DogWalkScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogWalkScene.swift; sourceTree = "<group>"; };
 		BC3ED898D8BE8905DD5BFEED /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C7D51609A8461B35B8430FD7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		F0348CD6EEA71AE8517F9471 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
 		FF839F1A0D0B6C4830855A30 /* TreatNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreatNode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -89,6 +93,7 @@
 				A1E2B21AFFEC2B082C6F7681 /* DogWalkScene.swift */,
 				39DCA79A833EC0E8070CC06E /* GameScene.swift */,
 				2364C7CE5F995CF918DD0509 /* GameView.swift */,
+				567952FF22784030554E00BF /* GroomingView.swift */,
 				FF839F1A0D0B6C4830855A30 /* TreatNode.swift */,
 			);
 			path = Game;
@@ -106,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				57D170B8D5194A516FF1C7AF /* DogBreed.swift */,
+				F0348CD6EEA71AE8517F9471 /* GameResult.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -193,8 +199,10 @@
 				B45A5A716D12154379827B3C /* DogSelectionView.swift in Sources */,
 				65F5FC20CF7C228D3DF31B56 /* DogWalkScene.swift in Sources */,
 				1BD965A00A5796D2672DF27B /* FluffButsApp.swift in Sources */,
+				7AA4646C9078A3A0B68A5724 /* GameResult.swift in Sources */,
 				8BD4A7EAC19CD5EE6F38FC97 /* GameScene.swift in Sources */,
 				656366CD5F92AC97DBF1781E /* GameView.swift in Sources */,
+				45349B4E3445240D1A41E039 /* GroomingView.swift in Sources */,
 				15E1CA8503DA62A1382D6318 /* TreatNode.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

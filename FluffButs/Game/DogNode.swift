@@ -3,23 +3,34 @@ import UIKit
 
 // MARK: - DogNode
 // Drawn entirely with SKShapeNode so it renders on every device & simulator.
-// Supports multiple breeds via DogBreed.
+// Supports multiple breeds via DogBreed, with breed-specific special moves.
 @MainActor
 final class DogNode: SKNode {
 
     // MARK: Public State
     private(set) var isMoving: Bool = false
+    private(set) var isStubborn: Bool = false
+    private(set) var isWet: Bool = false
     var targetPosition: CGPoint?
     let breed: DogBreed
 
     // MARK: Private
     private let bodyNode: SKNode   // container — flip xScale to change direction
+    private var specialMoveTimer: TimeInterval = 0
+    private var specialMoveInterval: TimeInterval
+
+    // Callbacks
+    var onGotWet: (() -> Void)?
 
     // MARK: - Init
 
     init(breed: DogBreed = .memphis) {
         self.breed = breed
         bodyNode = SKNode()
+        // Memphis hops every 3-4s; Lincoln stops every 4-6s
+        specialMoveInterval = breed == .memphis
+            ? TimeInterval.random(in: 2.5...4.0)
+            : TimeInterval.random(in: 3.5...6.0)
         super.init()
         addChild(bodyNode)
         drawDog()
@@ -38,6 +49,13 @@ final class DogNode: SKNode {
         let earColor    = breed.earColor
         let snoutColor  = breed.snoutColor
         let noseColor   = UIColor(red: 0.10, green: 0.06, blue: 0.02, alpha: 1.0)
+
+        // Shadow under body
+        let shadow = SKShapeNode(ellipseOf: CGSize(width: 48, height: 10))
+        shadow.fillColor = UIColor(white: 0, alpha: 0.18)
+        shadow.strokeColor = .clear
+        shadow.position = CGPoint(x: 0, y: -20)
+        bodyNode.addChild(shadow)
 
         // Body
         let body = SKShapeNode(ellipseOf: CGSize(width: 52, height: 36))
@@ -92,7 +110,7 @@ final class DogNode: SKNode {
         tail.lineCap = .round
         bodyNode.addChild(tail)
 
-        // Legs
+        // Legs (4)
         for (lx, ly): (CGFloat, CGFloat) in [(-14, -18), (-4, -18), (10, -18), (20, -18)] {
             let leg = SKShapeNode(rectOf: CGSize(width: 8, height: 18), cornerRadius: 3)
             leg.fillColor = bodyColor
@@ -132,7 +150,7 @@ final class DogNode: SKNode {
         body.linearDamping = 0.4
         body.mass = 1.0
         body.categoryBitMask    = PhysicsCategory.dog
-        body.contactTestBitMask = PhysicsCategory.finishLine
+        body.contactTestBitMask = PhysicsCategory.finishLine | PhysicsCategory.water
         body.collisionBitMask   = PhysicsCategory.ground
         physicsBody = body
     }
@@ -146,6 +164,7 @@ final class DogNode: SKNode {
     // MARK: - Movement (physics-driven, for GameScene)
 
     func moveTo(position: CGPoint) {
+        guard !isStubborn else { return }
         targetPosition = position
         isMoving = true
         faceDirection(goingRight: position.x >= self.position.x)
@@ -157,18 +176,133 @@ final class DogNode: SKNode {
         physicsBody?.velocity.dx = 0
     }
 
-    func updateMovement() {
-        guard let target = targetPosition else {
+    func updateMovement(deltaTime: TimeInterval) {
+        guard !isStubborn else { return }
+
+        if let target = targetPosition {
+            let dx = target.x - position.x
+            if abs(dx) < 25 {
+                stopMoving()
+            } else {
+                let speed: CGFloat = isWet ? 110 : 190
+                physicsBody?.velocity.dx = dx > 0 ? speed : -speed
+            }
+        } else {
             if let vx = physicsBody?.velocity.dx, abs(vx) > 1 {
                 physicsBody?.velocity.dx = vx * 0.8
             }
-            return
         }
-        let dx = target.x - position.x
-        if abs(dx) < 25 {
-            stopMoving()
-        } else {
-            physicsBody?.velocity.dx = dx > 0 ? 190.0 : -190.0
+
+        // Trigger breed special moves while moving
+        if isMoving && targetPosition != nil {
+            specialMoveTimer += deltaTime
+            if specialMoveTimer >= specialMoveInterval {
+                specialMoveTimer = 0
+                specialMoveInterval = breed == .memphis
+                    ? TimeInterval.random(in: 2.5...4.0)
+                    : TimeInterval.random(in: 3.5...6.0)
+                triggerSpecialMove()
+            }
         }
+    }
+
+    // MARK: - Special Moves
+
+    private func triggerSpecialMove() {
+        switch breed {
+        case .memphis: deerHop()
+        case .lincoln: goStubborn()
+        }
+    }
+
+    /// Memphis: leap upward with a happy bounce
+    func deerHop() {
+        guard let body = physicsBody else { return }
+        body.velocity.dy = 420  // big upward kick
+        // Wag tail during hop
+        let wag = SKAction.sequence([
+            SKAction.rotate(byAngle: 0.4, duration: 0.1),
+            SKAction.rotate(byAngle: -0.4, duration: 0.1)
+        ])
+        bodyNode.run(SKAction.repeat(wag, count: 4))
+        showSpeechBubble("Wheee! 🦌")
+    }
+
+    /// Lincoln: plant his feet and refuse to move for a moment
+    func goStubborn() {
+        guard !isStubborn else { return }
+        isStubborn = true
+        stopMoving()
+        showSpeechBubble("Nope. 😤")
+        // Resume after 2-3 seconds
+        let wait = TimeInterval.random(in: 2.0...3.5)
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: wait),
+            SKAction.run { [weak self] in
+                self?.isStubborn = false
+                // Resume toward old target
+                if let t = self?.targetPosition {
+                    self?.moveTo(position: t)
+                }
+            }
+        ]))
+    }
+
+    /// Called when Lincoln hits a water puddle
+    func getWet() {
+        guard !isWet else { return }
+        isWet = true
+        onGotWet?()
+        showSpeechBubble("Nooooo! 💦")
+        // Shake the dog
+        let shake = SKAction.sequence([
+            SKAction.moveBy(x: -6, y: 0, duration: 0.05),
+            SKAction.moveBy(x: 6, y: 0, duration: 0.05)
+        ])
+        run(SKAction.repeat(shake, count: 6))
+        // Show water droplets
+        for i in 0..<5 {
+            let drop = SKShapeNode(circleOfRadius: 4)
+            drop.fillColor = SKColor(red: 0.30, green: 0.65, blue: 0.95, alpha: 0.85)
+            drop.strokeColor = .clear
+            let angle = CGFloat(i) / 5.0 * .pi * 2
+            drop.position = CGPoint(x: cos(angle) * 20, y: sin(angle) * 20 + 10)
+            addChild(drop)
+            drop.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.moveBy(x: cos(angle) * 30, y: sin(angle) * 30, duration: 0.6),
+                    SKAction.fadeOut(withDuration: 0.6)
+                ]),
+                SKAction.removeFromParent()
+            ]))
+        }
+    }
+
+    // MARK: - Speech Bubble
+
+    private func showSpeechBubble(_ text: String) {
+        // Remove existing bubble
+        childNode(withName: "speechBubble")?.removeFromParent()
+
+        let label = SKLabelNode(text: text)
+        label.fontSize = 14
+        label.fontColor = SKColor(red: 0.25, green: 0.12, blue: 0.02, alpha: 1.0)
+        label.verticalAlignmentMode = .center
+        label.horizontalAlignmentMode = .center
+
+        let bubble = SKShapeNode(rectOf: CGSize(width: label.frame.width + 20, height: 28), cornerRadius: 10)
+        bubble.fillColor = .white
+        bubble.strokeColor = SKColor(white: 0.8, alpha: 1)
+        bubble.lineWidth = 1.5
+        bubble.position = CGPoint(x: 10, y: 52)
+        bubble.name = "speechBubble"
+        bubble.addChild(label)
+        addChild(bubble)
+
+        bubble.run(SKAction.sequence([
+            SKAction.wait(forDuration: 1.8),
+            SKAction.fadeOut(withDuration: 0.4),
+            SKAction.removeFromParent()
+        ]))
     }
 }
