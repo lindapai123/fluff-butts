@@ -509,8 +509,8 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
             return
         }
 
-        // Check tray bones (only if game not started)
-        if !gameStarted, let trayBG = gameCamera.childNode(withName: "trayBG") {
+        // Check tray bones (available throughout the game)
+        if let trayBG = gameCamera.childNode(withName: "trayBG") {
             let trayLoc = touch.location(in: trayBG)
             for i in 0..<GameScene.totalTrayBones {
                 guard !traySlotUsed[i] else { continue }
@@ -556,8 +556,12 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
                 treat.position = CGPoint(x: worldLoc.x, y: groundY + 22)
                 addChild(treat)
                 treats.append(treat)
-                showStartButton()
                 showPlacementMarker(at: treat.position)
+                if gameStarted {
+                    seekNearestTreat()  // redirect dog to new bone immediately
+                } else {
+                    showStartButton()
+                }
             } else {
                 // Dropped back in tray area — return slot
                 traySlotUsed[draggedSlotIndex] = false
