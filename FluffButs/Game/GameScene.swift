@@ -181,7 +181,7 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
 
     private func setupStartLabel() {
         // "TAP TO DROP A BONE" hint — shown in camera space so it stays on screen
-        let hint = SKLabelNode(text: "Tap anywhere to drop a bone 🦴")
+        let hint = SKLabelNode(text: "Tap anywhere to drop a bone!")
         hint.fontSize = 16
         hint.fontName = "AvenirNext-Medium"
         hint.fontColor = SKColor(white: 1.0, alpha: 0.85)
