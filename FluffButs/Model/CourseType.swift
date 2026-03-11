@@ -14,14 +14,14 @@ enum CourseType: String, CaseIterable {
     var description: String {
         switch self {
         case .park:     return "Rocks, puddles & bones"
-        case .swimming: return "Coming soon!"
+        case .swimming: return "Seaweed, fish & bones!"
         }
     }
 
     var isAvailable: Bool {
         switch self {
         case .park:     return true
-        case .swimming: return false
+        case .swimming: return true
         }
     }
 }

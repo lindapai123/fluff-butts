@@ -211,7 +211,11 @@ struct ContentView: View {
             DogSelectionView(selectedBreed: $selectedBreed)
         }
         .fullScreenCover(isPresented: $showGame) {
-            GameView(breed: selectedBreed ?? .memphis)
+            if selectedCourse == .swimming {
+                SwimmingView(breed: selectedBreed ?? .memphis)
+            } else {
+                GameView(breed: selectedBreed ?? .memphis)
+            }
         }
         .sheet(isPresented: $showCourseSelection) {
             CourseSelectionSheet(selectedCourse: $selectedCourse)

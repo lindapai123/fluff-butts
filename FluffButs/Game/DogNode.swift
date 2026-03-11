@@ -345,6 +345,11 @@ final class DogNode: SKNode {
         }
     }
 
+    /// Called by SwimmingScene periodically for Lincoln
+    func showWaterSpeech() { showSpeechBubble("WHY?!") }
+    /// Called by SwimmingScene periodically for Memphis
+    func showSwimSpeech()  { showSpeechBubble("WHEEE!") }
+
     // MARK: - Speech Bubble
 
     private func showSpeechBubble(_ text: String) {
