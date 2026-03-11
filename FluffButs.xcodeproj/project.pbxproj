@@ -11,9 +11,11 @@
 		15E1CA8503DA62A1382D6318 /* TreatNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF839F1A0D0B6C4830855A30 /* TreatNode.swift */; };
 		1BD965A00A5796D2672DF27B /* FluffButsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21707053A44D131D10E71EE8 /* FluffButsApp.swift */; };
 		45349B4E3445240D1A41E039 /* GroomingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 567952FF22784030554E00BF /* GroomingView.swift */; };
+		5AAC1EEA4277D5BA884C2460 /* CourseType.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5791B681FF8D60FC664153 /* CourseType.swift */; };
 		656366CD5F92AC97DBF1781E /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2364C7CE5F995CF918DD0509 /* GameView.swift */; };
 		65F5FC20CF7C228D3DF31B56 /* DogWalkScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1E2B21AFFEC2B082C6F7681 /* DogWalkScene.swift */; };
 		7AA4646C9078A3A0B68A5724 /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0348CD6EEA71AE8517F9471 /* GameResult.swift */; };
+		7AAE4A20CA6E5F7EE007F46E /* CourseSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 077E3389C232569B3D981895 /* CourseSelectionSheet.swift */; };
 		88821E5FB05F1101C34E274E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3ED898D8BE8905DD5BFEED /* ContentView.swift */; };
 		8BD4A7EAC19CD5EE6F38FC97 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39DCA79A833EC0E8070CC06E /* GameScene.swift */; };
 		930AC58D73B7D28CCA1C5D80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8C7F5C13265DCA54AC76CA26 /* Assets.xcassets */; };
@@ -24,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		077E3389C232569B3D981895 /* CourseSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSelectionSheet.swift; sourceTree = "<group>"; };
 		0F821A57952C20B534A05B9D /* FluffButs.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FluffButs.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		21707053A44D131D10E71EE8 /* FluffButsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluffButsApp.swift; sourceTree = "<group>"; };
 		2364C7CE5F995CF918DD0509 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
@@ -36,6 +39,7 @@
 		786C4AC60C66C851C4201831 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8C7F5C13265DCA54AC76CA26 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1E2B21AFFEC2B082C6F7681 /* DogWalkScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogWalkScene.swift; sourceTree = "<group>"; };
+		AA5791B681FF8D60FC664153 /* CourseType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseType.swift; sourceTree = "<group>"; };
 		BC3ED898D8BE8905DD5BFEED /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C7D51609A8461B35B8430FD7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		F0348CD6EEA71AE8517F9471 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
@@ -76,6 +80,7 @@
 			children = (
 				8C7F5C13265DCA54AC76CA26 /* Assets.xcassets */,
 				BC3ED898D8BE8905DD5BFEED /* ContentView.swift */,
+				077E3389C232569B3D981895 /* CourseSelectionSheet.swift */,
 				768653599E1BF9815530F2DB /* DogSelectionView.swift */,
 				21707053A44D131D10E71EE8 /* FluffButsApp.swift */,
 				786C4AC60C66C851C4201831 /* Info.plist */,
@@ -110,6 +115,7 @@
 		E0EADDB4D38D5B8B0B8FA12A /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				AA5791B681FF8D60FC664153 /* CourseType.swift */,
 				57D170B8D5194A516FF1C7AF /* DogBreed.swift */,
 				F0348CD6EEA71AE8517F9471 /* GameResult.swift */,
 			);
@@ -194,6 +200,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				88821E5FB05F1101C34E274E /* ContentView.swift in Sources */,
+				7AAE4A20CA6E5F7EE007F46E /* CourseSelectionSheet.swift in Sources */,
+				5AAC1EEA4277D5BA884C2460 /* CourseType.swift in Sources */,
 				93CCE9038DDC08759C2CD3A5 /* DogBreed.swift in Sources */,
 				D402F81D6EC86EA9C878D26E /* DogNode.swift in Sources */,
 				B45A5A716D12154379827B3C /* DogSelectionView.swift in Sources */,

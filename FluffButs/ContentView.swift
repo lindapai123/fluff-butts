@@ -3,7 +3,9 @@ import SwiftUI
 struct ContentView: View {
     @State private var isAnimating = false
     @State private var selectedBreed: DogBreed? = nil
+    @State private var selectedCourse: CourseType = .park
     @State private var showDogSelection = false
+    @State private var showCourseSelection = false
     @State private var showGame = false
 
     var body: some View {
@@ -90,6 +92,37 @@ struct ContentView: View {
                 Spacer()
 
                 VStack(spacing: 14) {
+                    // Change Course box
+                    Button {
+                        showCourseSelection = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: selectedCourse.icon)
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(Color(red: 0.15, green: 0.50, blue: 0.85))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Change Course")
+                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                    .foregroundColor(Color(red: 0.40, green: 0.40, blue: 0.55))
+                                Text(selectedCourse.rawValue)
+                                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                                    .foregroundColor(Color(red: 0.15, green: 0.35, blue: 0.70))
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Color(red: 0.55, green: 0.55, blue: 0.70))
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18)
+                                .fill(Color(red: 0.88, green: 0.92, blue: 1.0))
+                                .shadow(color: Color(red: 0.15, green: 0.35, blue: 0.70).opacity(0.18),
+                                        radius: 6, x: 0, y: 3)
+                        )
+                    }
+
                     // Choose Dog button
                     Button {
                         showDogSelection = true
@@ -179,6 +212,10 @@ struct ContentView: View {
         }
         .fullScreenCover(isPresented: $showGame) {
             GameView(breed: selectedBreed ?? .memphis)
+        }
+        .sheet(isPresented: $showCourseSelection) {
+            CourseSelectionSheet(selectedCourse: $selectedCourse)
+                .presentationDetents([.fraction(0.45)])
         }
     }
 }
