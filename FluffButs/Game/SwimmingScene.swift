@@ -276,6 +276,8 @@ final class SwimmingScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         dogNode.physicsBody?.linearDamping = 2.8
         dogNode.physicsBody?.density       = 0.6
         dogNode.physicsBody?.allowsRotation = false
+        // Disable stubborn stops and deer hops — they cause erratic movement underwater
+        dogNode.specialMovesEnabled = false
     }
 
     // MARK: - Camera
@@ -515,6 +517,9 @@ final class SwimmingScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         lastUpdateTime = currentTime
         guard gameStarted else { return }
 
+        // In water the dog is never truly "in air" — keep paddle always responsive
+        dogNode.didLand()
+
         dogNode.updateMovement(deltaTime: dt)
 
         // Clamp to water column
@@ -542,7 +547,7 @@ final class SwimmingScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         let movedX = abs(dogNode.position.x - lastDogX)
         if movedX < 2 && !treats.filter({ !$0.isCollected }).isEmpty {
             stuckTimer += dt
-            if stuckTimer > 0.5 { dogNode.physicsBody?.applyImpulse(CGVector(dx: 200, dy: 80)); stuckTimer = 0 }
+            if stuckTimer > 0.5 { dogNode.physicsBody?.applyImpulse(CGVector(dx: 200, dy: 0)); stuckTimer = 0 }
         } else { stuckTimer = 0 }
         lastDogX = dogNode.position.x
 

@@ -14,6 +14,8 @@ final class DogNode: SKNode {
     private(set) var isInAir: Bool = false
     var targetPosition: CGPoint?
     let breed: DogBreed
+    /// Set false in SwimmingScene — stops stubborn freezes and deer hops underwater
+    var specialMovesEnabled: Bool = true
 
     // MARK: Private
     private let bodyNode: SKNode   // container — flip xScale to change direction
@@ -200,7 +202,7 @@ final class DogNode: SKNode {
         }
 
         // Trigger breed special moves while moving
-        if isMoving && targetPosition != nil {
+        if isMoving && targetPosition != nil && specialMovesEnabled {
             specialMoveTimer += deltaTime
             if specialMoveTimer >= specialMoveInterval {
                 specialMoveTimer = 0
