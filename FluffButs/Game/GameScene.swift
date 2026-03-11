@@ -254,7 +254,9 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     private func setupDog() {
         dogNode = DogNode(breed: breed)
         dogNode.position = CGPoint(x: 60, y: groundY + 50)
-        dogNode.onGotWet = { [weak self] in self?.gotWet = true }
+        // Park puddles slow/animate the dog but don't count as "swimming wet"
+        // gotWet = true is only set by SwimmingScene (the actual swimming course)
+        dogNode.onGotWet = { }
         addChild(dogNode)
     }
 
@@ -730,7 +732,9 @@ final class GameScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
     }
 
     private func handleWater() {
-        if breed == .lincoln { dogNode.getWet() } else { dogNode.deerHop() }
+        // Park puddles: Memphis hops over, Lincoln splashes but stays dry (no gotWet)
+        // gotWet is reserved for the swimming course only
+        if breed == .memphis { dogNode.deerHop() } else { dogNode.splashOnly() }
     }
 
     private func handleRockHit() {

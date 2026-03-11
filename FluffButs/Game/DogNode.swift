@@ -315,6 +315,32 @@ final class DogNode: SKNode {
         return retreatDir * abs(bodyNode.xScale)
     }
 
+    /// Park puddle splash — visual only, does NOT set gotWet (that's swimming course only)
+    func splashOnly() {
+        showSpeechBubble("Yuck!")
+        let shake = SKAction.sequence([
+            SKAction.moveBy(x: -5, y: 0, duration: 0.05),
+            SKAction.moveBy(x:  5, y: 0, duration: 0.05)
+        ])
+        run(SKAction.repeat(shake, count: 3))
+        // Small water drops for visual flair
+        for i in 0..<4 {
+            let drop = SKShapeNode(circleOfRadius: 3)
+            drop.fillColor = SKColor(red: 0.30, green: 0.65, blue: 0.95, alpha: 0.85)
+            drop.strokeColor = .clear
+            let angle = CGFloat(i) / 4.0 * .pi * 2
+            drop.position = CGPoint(x: cos(angle) * 14, y: sin(angle) * 14 + 8)
+            addChild(drop)
+            drop.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.moveBy(x: cos(angle)*20, y: sin(angle)*20, duration: 0.5),
+                    SKAction.fadeOut(withDuration: 0.5)
+                ]),
+                SKAction.removeFromParent()
+            ]))
+        }
+    }
+
     /// Called when Lincoln hits a water puddle
     func getWet() {
         guard !isWet else { return }
