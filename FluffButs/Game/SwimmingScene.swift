@@ -413,7 +413,7 @@ final class SwimmingScene: SKScene, @preconcurrency SKPhysicsContactDelegate {
         // Paddle button
         if gameStarted, !isCourseComplete,
            let btn = gameCamera.childNode(withName: "paddleBtn"), btn.contains(camLoc) {
-            dogNode.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 420))
+            dogNode.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 220))
             btn.run(SKAction.sequence([SKAction.scale(to: 0.88, duration: 0.06),
                                        SKAction.scale(to: 1.0, duration: 0.10)]))
             return
