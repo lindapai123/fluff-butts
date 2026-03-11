@@ -81,11 +81,17 @@ struct GroomingView: View {
                         DebrisView(item: item)
                     }
 
-                    // Brush cursor — follows drag
+                    // Tool cursor — brush for park, blow dryer for swimming
                     if isBrushing {
-                        BrushView()
-                            .position(brushPosition)
-                            .allowsHitTesting(false)
+                        if result.gotWet {
+                            BlowDryerView()
+                                .position(brushPosition)
+                                .allowsHitTesting(false)
+                        } else {
+                            BrushView()
+                                .position(brushPosition)
+                                .allowsHitTesting(false)
+                        }
                     }
 
                     // Sparkles
@@ -128,7 +134,7 @@ struct GroomingView: View {
                 if !isGroomingDone {
                     VStack(spacing: 6) {
                         Text(removedCount == 0
-                             ? "Drag the brush to groom!"
+                             ? (result.gotWet ? "Blow dry the seaweed out!" : "Drag the brush to groom!")
                              : "\(totalCount - removedCount) more to go…")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundColor(Color(red: 0.40, green: 0.22, blue: 0.58))
@@ -274,29 +280,31 @@ struct GroomingView: View {
     }
 
     private static func makeDebris(stars: Int, isWet: Bool) -> [DebrisItem] {
-        // More debris = worse run
-        let stickCount  = isWet ? 5 : max(1, 5 - stars)
-        let leafCount   = isWet ? 8 : max(2, 7 - stars)
-        let mudCount    = isWet ? 4 : 0
-
         var items: [DebrisItem] = []
 
-        // Spread within the image canvas (320×340), avoiding edges
         func rpt() -> CGPoint {
-            CGPoint(x: CGFloat.random(in: 40...280),
-                    y: CGFloat.random(in: 40...300))
+            CGPoint(x: CGFloat.random(in: 40...280), y: CGFloat.random(in: 40...300))
         }
 
-        for _ in 0..<stickCount {
-            items.append(DebrisItem(type: .stick, position: rpt(),
-                                    rotation: .degrees(Double.random(in: -45...45))))
-        }
-        for _ in 0..<leafCount {
-            items.append(DebrisItem(type: .leaf, position: rpt(),
-                                    rotation: .degrees(Double.random(in: 0...360))))
-        }
-        for _ in 0..<mudCount {
-            items.append(DebrisItem(type: .mud, position: rpt(), rotation: .zero))
+        if isWet {
+            // Swimming course — seaweed tangles only
+            let seaweedCount = max(6, 14 - stars * 2)
+            for _ in 0..<seaweedCount {
+                items.append(DebrisItem(type: .seaweed, position: rpt(),
+                                        rotation: .degrees(Double.random(in: -30...30))))
+            }
+        } else {
+            // Park course — sticks, leaves, mud
+            let stickCount = max(1, 5 - stars)
+            let leafCount  = max(2, 7 - stars)
+            for _ in 0..<stickCount {
+                items.append(DebrisItem(type: .stick, position: rpt(),
+                                        rotation: .degrees(Double.random(in: -45...45))))
+            }
+            for _ in 0..<leafCount {
+                items.append(DebrisItem(type: .leaf, position: rpt(),
+                                        rotation: .degrees(Double.random(in: 0...360))))
+            }
         }
         return items
     }
@@ -313,7 +321,7 @@ struct DebrisItem: Identifiable {
 }
 
 enum DebrisType {
-    case stick, leaf, mud
+    case stick, leaf, mud, seaweed
 }
 
 // MARK: - DebrisView
@@ -333,6 +341,8 @@ private struct DebrisView: View {
                     .fill(Color(red: 0.35, green: 0.22, blue: 0.10).opacity(0.85))
                     .frame(width: 28, height: 18)
                     .overlay(Circle().fill(Color(red: 0.40, green: 0.28, blue: 0.15).opacity(0.5)).frame(width: 14, height: 10))
+            case .seaweed:
+                SeaweedView()
             }
         }
         .rotationEffect(item.rotation)
@@ -417,6 +427,72 @@ private struct BrushView: View {
                 .offset(y: 28)
         }
         .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Seaweed drawing
+
+private struct SeaweedView: View {
+    var body: some View {
+        ZStack {
+            // Main seaweed strand — wavy green ribbon
+            Path { p in
+                p.move(to: CGPoint(x: 0, y: 20))
+                p.addCurve(to:      CGPoint(x: 0, y: -20),
+                           control1: CGPoint(x: 14, y: 10),
+                           control2: CGPoint(x: -14, y: -10))
+            }
+            .stroke(
+                LinearGradient(colors: [Color(red: 0.12, green: 0.55, blue: 0.22),
+                                        Color(red: 0.22, green: 0.72, blue: 0.32)],
+                               startPoint: .bottom, endPoint: .top),
+                style: StrokeStyle(lineWidth: 7, lineCap: .round)
+            )
+            // Second strand slightly offset
+            Path { p in
+                p.move(to: CGPoint(x: 8, y: 18))
+                p.addCurve(to:      CGPoint(x: 6, y: -18),
+                           control1: CGPoint(x: -8, y: 8),
+                           control2: CGPoint(x: 20, y: -8))
+            }
+            .stroke(
+                Color(red: 0.15, green: 0.62, blue: 0.28).opacity(0.7),
+                style: StrokeStyle(lineWidth: 5, lineCap: .round)
+            )
+        }
+        .frame(width: 36, height: 44)
+    }
+}
+
+// MARK: - BlowDryer drawing
+
+private struct BlowDryerView: View {
+    var body: some View {
+        ZStack {
+            // Body of blow dryer
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color(red: 0.22, green: 0.52, blue: 0.90))
+                .frame(width: 52, height: 26)
+            // Nozzle
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color(red: 0.18, green: 0.42, blue: 0.78))
+                .frame(width: 22, height: 14)
+                .offset(x: 32, y: 0)
+            // Handle
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(red: 0.18, green: 0.42, blue: 0.78))
+                .frame(width: 14, height: 30)
+                .offset(x: -4, y: 24)
+            // Air stream dots
+            ForEach([0, 1, 2], id: \.self) { i in
+                Circle()
+                    .fill(Color.white.opacity(0.7))
+                    .frame(width: 5, height: 5)
+                    .offset(x: 52 + CGFloat(i) * 10, y: CGFloat(i % 2 == 0 ? -4 : 4))
+            }
+        }
+        .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 2)
+        .frame(width: 90, height: 60)
     }
 }
 
